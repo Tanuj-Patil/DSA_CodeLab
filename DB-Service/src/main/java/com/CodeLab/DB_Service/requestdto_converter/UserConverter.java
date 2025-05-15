@@ -1,0 +1,29 @@
+package com.CodeLab.DB_Service.requestdto_converter;
+
+
+import com.CodeLab.DB_Service.model.User;
+import com.CodeLab.DB_Service.model.Location;
+
+import com.CodeLab.DB_Service.requestDTO.UserRequestDTO;
+
+import java.util.ArrayList;
+
+
+public class UserConverter {
+    public static User userConverter(UserRequestDTO userRequestDTO){
+        User user = new User();
+        user.setName(userRequestDTO.getName());
+        user.setEmail(userRequestDTO.getEmail());
+        user.setPassword(userRequestDTO.getPassword());
+        user.setGender(userRequestDTO.getGender());
+        user.setUserCategory(userRequestDTO.getUserCategory());
+
+        Location location = LocationConverter.locationConverter(userRequestDTO.getLocationRequestDTO());
+        user.setLocation(location);
+
+        user.setSubmissionList(new ArrayList<>());
+
+        return user;
+
+    }
+}

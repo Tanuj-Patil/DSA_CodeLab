@@ -8,6 +8,7 @@ public class DbServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(DbServiceApplication.class, args);
+		System.out.println("DB-Service is Running:)");
 	}
 
 }
