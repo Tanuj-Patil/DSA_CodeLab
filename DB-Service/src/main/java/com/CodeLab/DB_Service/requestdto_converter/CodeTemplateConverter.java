@@ -14,7 +14,8 @@ public class CodeTemplateConverter {
         for (CodeTemplateRequestDTO codeTemplateRequestDTO : codeTemplateRequestDTOList){
             CodeTemplate codeTemplate = new CodeTemplate();
 
-            codeTemplate.setTemplateCode(codeTemplateRequestDTO.getTemplateCode());
+            codeTemplate.setVisibleTemplateCode(codeTemplateRequestDTO.getVisibleTemplateCode());
+            codeTemplate.setInvisibleTemplateCode(codeTemplateRequestDTO.getInvisibleTemplateCode());
             codeTemplate.setLanguage(codeTemplateRequestDTO.getLanguage());
             codeTemplate.setProblem(problem);
 

@@ -20,8 +20,11 @@ public class CodeTemplate {
     @Column(name = "code_template_id",updatable = false)
     private UUID codeTemplateId;
 
-    @Column(name = "template_code",nullable = false,columnDefinition = "TEXT")
-    private String templateCode;
+    @Column(name = "visible_template_code",nullable = false,columnDefinition = "TEXT")
+    private String visibleTemplateCode;
+
+    @Column(name = "invisible_template_code",nullable = false,columnDefinition = "TEXT")
+    private String invisibleTemplateCode;
 
     @Column(name = "language",nullable = false)
     @Enumerated(value = EnumType.STRING)

@@ -1,12 +1,14 @@
 package com.CodeLab.Auth_Service.service;
 
 import com.CodeLab.Auth_Service.integration.DBService;
+import com.CodeLab.Auth_Service.model.Pair;
 import com.CodeLab.Auth_Service.requestDTO.UserResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,6 +19,9 @@ import java.util.UUID;
 public class AuthService {
     @Autowired
     DBService dbService;
+
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Value("${auth.secret.key}")
     String secretKey;
@@ -36,31 +41,58 @@ public class AuthService {
         return jwtToken;
     }
 
-    public String decryptToken(String token){
-        String credentials = Jwts.parser().setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
-
-        log.info(credentials);
-        return credentials;
+    public String decryptToken(String token) {
+        try {
+            String credentials = Jwts.parser()
+                    .setSigningKey(secretKey)
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+            log.info("Token decrypted successfully: {}", credentials);
+            return credentials;
+        } catch (Exception e) {
+            log.error("Token decryption failed: {}", e.getMessage());
+            return null; // Or throw a custom exception
+        }
     }
 
-    public String validateToken(String token){
-        String credentials = decryptToken(token);
+    public Pair validateToken(String token) {
+        try {
+            String credentials = decryptToken(token);
+            if (credentials == null) {
+                log.warn("Invalid token: decryption failed");
+                return null;
+            }
 
-        String email = credentials.split(":")[0];
-        String password = credentials.split(":")[1];
+            String[] parts = credentials.split(":");
+            if (parts.length != 2) {
+                log.warn("Invalid token: malformed credentials");
+                return null;
+            }
 
-        UserResponse response = dbService.callGetUserByEmail(email);
+            String email = parts[0];
+            String password = parts[1];
 
-        if(response == null){
+            UserResponse response = dbService.callGetUserByEmail(email);
+            System.out.println(response.getEmail());
+            System.out.println(response.getUserId());
+            System.out.println(response.getPassword());
+            if (response == null) {
+                log.warn("User not found for email: {}", email);
+                return null;
+            }
+
+            boolean isPasswordValid = passwordEncoder.matches(password.trim(), response.getPassword());
+            log.info("Password validation result: {}", isPasswordValid);
+
+            return isPasswordValid ? new Pair(credentials,response.getUserId()) : null;
+        } catch (Exception e) {
+            log.error("Token validation failed: {}", e.getMessage());
             return null;
         }
-        return (response.getPassword().equals(password)) ? credentials : null;
-
     }
 
 
 
 }
+

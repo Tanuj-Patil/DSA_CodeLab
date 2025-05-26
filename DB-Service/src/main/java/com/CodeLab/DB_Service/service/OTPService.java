@@ -1,0 +1,56 @@
+package com.CodeLab.DB_Service.service;
+
+import com.CodeLab.DB_Service.model.OTP;
+import com.CodeLab.DB_Service.repository.OTPRepo;
+import com.CodeLab.DB_Service.requestDTO.OTPGenerateRequestDTO;
+import com.CodeLab.DB_Service.requestDTO.UserRequestDTO;
+import com.CodeLab.DB_Service.requestdto_converter.OTPConverter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+
+@Service
+public class OTPService {
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private OTPRepo otpRepo;
+
+    public void generateOTP(OTPGenerateRequestDTO requestDTO){
+        otpRepo.deleteByEmail(requestDTO.getEmail());
+
+        OTP otp = OTPConverter.otpConverter(requestDTO);
+
+        otpRepo.save(otp);
+    }
+
+    @Scheduled(fixedRate = 30000) // every 30 Seconds
+    public void deleteExpiredOtp() {
+        otpRepo.deleteByExpiryTimeBefore(LocalDateTime.now());
+    }
+    @Scheduled(fixedRate = 30000)  // every 30 Seconds
+    public void deleteVerifiedOtp() {
+        otpRepo.deleteVerifiedOTPs(true);
+    }
+
+    public boolean verifyOTP(UserRequestDTO requestDTO,String otpNumber){
+        String email = requestDTO.getEmail();
+
+
+        OTP otp = otpRepo.findByEmailAndOtpAndIsVerifiedFalse(email,otpNumber).orElse(null);
+
+        if(otp == null){
+            return false;
+        }
+
+        otp.setIsVerified(true);
+        otpRepo.save(otp);
+
+
+
+        return true;
+    }
+}

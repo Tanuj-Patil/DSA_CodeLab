@@ -1,15 +1,13 @@
 package com.CodeLab.Auth_Service.controller;
 
-import com.CodeLab.Auth_Service.responseDTO.TokenResponseDTO;
+import com.CodeLab.Auth_Service.model.Pair;
+import com.CodeLab.Auth_Service.responseDTO.LoginResponseDTO;
 import com.CodeLab.Auth_Service.responseDTO.TokenValidationResponseDTO;
 import com.CodeLab.Auth_Service.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth/token")
@@ -23,17 +21,38 @@ public class AuthController {
 
         String jwtToken = authService.generateToken(email,password);
 
-        TokenResponseDTO responseDTO = new TokenResponseDTO(jwtToken);
+        System.out.println(jwtToken);
+
+
+        LoginResponseDTO responseDTO = new LoginResponseDTO(jwtToken);
 
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
     @GetMapping("/validate")
-    public ResponseEntity<?> validateToken(){
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String header) {
         TokenValidationResponseDTO responseDTO = new TokenValidationResponseDTO();
-        responseDTO.setValid(true);
 
-        return new ResponseEntity<>(responseDTO,HttpStatus.OK);
+        if (header == null || !header.startsWith("Bearer ")) {
+            responseDTO.setValid(false);
+            responseDTO.setMessage("Authorization header is missing or malformed.");
+            return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+        }
+
+        String token = header.substring(7); // Remove "Bearer " prefix
+        Pair pair = authService.validateToken(token);
+
+        if (pair == null) {
+            responseDTO.setValid(false);
+            responseDTO.setMessage("Invalid or expired token.");
+            return new ResponseEntity<>(responseDTO,HttpStatus.OK);
+        }
+        responseDTO.setUserId(pair.getUserId());
+        responseDTO.setValid(true);
+        responseDTO.setMessage("Token is valid.");
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+
+
     }
 
 

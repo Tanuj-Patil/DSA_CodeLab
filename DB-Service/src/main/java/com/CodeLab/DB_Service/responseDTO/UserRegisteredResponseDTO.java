@@ -3,6 +3,8 @@ package com.CodeLab.DB_Service.responseDTO;
 import com.CodeLab.DB_Service.model.User;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -10,6 +12,5 @@ import lombok.*;
 @ToString
 
 public class UserRegisteredResponseDTO {
-    String message;
-    User user;
+    UUID userId;
 }

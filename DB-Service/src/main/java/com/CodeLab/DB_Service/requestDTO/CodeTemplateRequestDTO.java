@@ -11,7 +11,9 @@ import lombok.*;
 
 public class CodeTemplateRequestDTO {
 
-    private String templateCode;
+    private String visibleTemplateCode;
+
+    private String invisibleTemplateCode;
 
     private Language language;
 }

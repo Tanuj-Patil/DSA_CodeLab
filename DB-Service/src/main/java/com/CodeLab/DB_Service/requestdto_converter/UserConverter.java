@@ -12,8 +12,8 @@ import java.util.ArrayList;
 public class UserConverter {
     public static User userConverter(UserRequestDTO userRequestDTO){
         User user = new User();
-        user.setName(userRequestDTO.getName());
-        user.setEmail(userRequestDTO.getEmail());
+        user.setName(userRequestDTO.getName().trim());
+        user.setEmail(userRequestDTO.getEmail().trim());
         user.setPassword(userRequestDTO.getPassword());
         user.setGender(userRequestDTO.getGender());
         user.setUserCategory(userRequestDTO.getUserCategory());
@@ -22,6 +22,8 @@ public class UserConverter {
         user.setLocation(location);
 
         user.setSubmissionList(new ArrayList<>());
+
+//        user.setVerified(false);
 
         return user;
 

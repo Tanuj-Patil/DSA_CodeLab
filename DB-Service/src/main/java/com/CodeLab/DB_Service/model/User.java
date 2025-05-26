@@ -61,5 +61,7 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<Submission> submissionList;
 
+//    @Column(name = "is_verified",nullable = false)
+//    private boolean verified;
 
 }

@@ -3,6 +3,7 @@ package com.CodeLab.DB_Service.controller;
 import com.CodeLab.DB_Service.model.Submission;
 import com.CodeLab.DB_Service.model.User;
 import com.CodeLab.DB_Service.requestDTO.UserRequestDTO;
+import com.CodeLab.DB_Service.responseDTO.IsUserAlreadyPresentResponseDTO;
 import com.CodeLab.DB_Service.responseDTO.PasswordChangeResponseDTO;
 import com.CodeLab.DB_Service.responseDTO.UserRegisteredResponseDTO;
 import com.CodeLab.DB_Service.responseDTO.UserResponse;
@@ -23,15 +24,31 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @GetMapping("/is-user-already-present/{email}")
+    public ResponseEntity<?> IsUserEmailAlreadyExists(@PathVariable String email){
+        IsUserAlreadyPresentResponseDTO alreadyPresent = new IsUserAlreadyPresentResponseDTO();
+
+        User user =  userService.getUserByEmail(email);
+        if(user == null){
+            alreadyPresent.setPresent(false);
+            return new ResponseEntity<>(alreadyPresent,HttpStatus.OK);
+        }
+
+        alreadyPresent.setPresent(true);
+        return new ResponseEntity<>(alreadyPresent,HttpStatus.FOUND);
+    }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRequestDTO userRequestDTO){
         User user = userService.registerUser(userRequestDTO);
         UserRegisteredResponseDTO responseDTO = new UserRegisteredResponseDTO();
-        responseDTO.setMessage("User with id-"+user.getUserId()+" has been registered successfully:)");
-        responseDTO.setUser(user);
+//        responseDTO.setMessage("User with id-"+user.getUserId()+" has been registered successfully:)");
+//        responseDTO.setUser(user);
+        responseDTO.setUserId(user.getUserId());
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
+
+
 
     @GetMapping("/get-by-email")
     public UserResponse getUserByEmail(@RequestParam String email){
@@ -40,6 +57,7 @@ public class UserController {
             return null;
         }
         UserResponse response = new UserResponse();
+        response.setUserId(user.getUserId());
         response.setEmail(user.getEmail());
         response.setPassword(user.getPassword());
         return response;
@@ -75,14 +93,6 @@ public class UserController {
 
 
 
-    /*
-//    * User can Register
-    * User can Log in
-    * User can run code
-    * User can submit code
-//    * User can get the submission details
-    * User can get the solution of a problem
-    * User can forget password
-    * User can view profile
-    * User can update profile */
+
+
 }

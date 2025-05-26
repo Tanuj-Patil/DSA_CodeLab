@@ -5,27 +5,45 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class JwtConfiguration {
-    @Autowired
-    JwtFilter jwtFilter;
+
+//    @Autowired
+//    JwtFilter jwtFilter;
+//
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        return http
+//                .csrf(csrf -> csrf.disable())
+//                .cors(cors -> {}) // Optional: for cross-origin support
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers("/auth/token/generate", "/auth/token/validate").permitAll()
+//                        .anyRequest().authenticated()
+//                )
+//                .sessionManagement(session -> session
+//                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                )
+//                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+//                .build();
+//    }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
-        return httpSecurity
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/token/generate").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                        .anyRequest().permitAll()
+                );
+        return http.build();
     }
 
+
+
+    // Optional: Global CORS config
+    // @Bean
+    // public CorsConfigurationSource corsConfigurationSource() { ... }
 }

@@ -2,6 +2,8 @@ package com.CodeLab.Auth_Service.responseDTO;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -9,5 +11,7 @@ import lombok.*;
 @ToString
 
 public class TokenValidationResponseDTO {
+    UUID userId;
     boolean isValid;
+    String message;
 }

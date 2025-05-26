@@ -2,6 +2,8 @@ package com.CodeLab.DB_Service.responseDTO;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -9,6 +11,7 @@ import lombok.*;
 @ToString
 
 public class UserResponse {
+    UUID userId;
     String email;
     String password;
 }

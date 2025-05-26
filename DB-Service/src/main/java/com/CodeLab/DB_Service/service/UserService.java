@@ -17,10 +17,10 @@ import java.util.UUID;
 @Service
 public class UserService {
     @Autowired
-    UserRepo userRepo;
+    private UserRepo userRepo;
 
    @Autowired
-   SubmissionService submissionService;
+   private SubmissionService submissionService;
 
     public User registerUser(UserRequestDTO userRequestDTO){
         User user = UserConverter.userConverter(userRequestDTO);
@@ -30,6 +30,11 @@ public class UserService {
 
     public User getUserByEmail(String email){
         return userRepo.getByEmail(email).orElse(null);
+
+    }
+
+    public User getUserById(UUID id){
+        return userRepo.findById(id).orElse(null);
 
     }
 

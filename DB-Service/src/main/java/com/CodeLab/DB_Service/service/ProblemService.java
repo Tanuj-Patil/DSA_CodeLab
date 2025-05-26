@@ -1,17 +1,20 @@
 package com.CodeLab.DB_Service.service;
 
-import com.CodeLab.DB_Service.Exceptions.NotFoundException;
+import com.CodeLab.DB_Service.exceptions.NotFoundException;
 import com.CodeLab.DB_Service.model.Company;
 import com.CodeLab.DB_Service.model.Problem;
+import com.CodeLab.DB_Service.model.TestCase;
 import com.CodeLab.DB_Service.model.Topic;
 import com.CodeLab.DB_Service.repository.CompanyRepo;
 import com.CodeLab.DB_Service.repository.ProblemRepo;
 import com.CodeLab.DB_Service.repository.TopicRepo;
 import com.CodeLab.DB_Service.requestDTO.CompanyRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.ProblemRequestDTO;
+import com.CodeLab.DB_Service.requestDTO.TestCaseRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.TopicRequestDTO;
 import com.CodeLab.DB_Service.requestdto_converter.CompanyConverter;
 import com.CodeLab.DB_Service.requestdto_converter.ProblemConverter;
+import com.CodeLab.DB_Service.requestdto_converter.TestCaseConverter;
 import com.CodeLab.DB_Service.requestdto_converter.TopicConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -87,21 +90,26 @@ public class ProblemService {
 
     public List<Problem> getProblemsTopicWise(String topicName){
         topicName = topicName.toUpperCase().trim();
+        topicName = this.replaceDashBySpace(topicName);
         return problemRepo.findByTopicName(topicName);
     }
 
     public List<Problem> getProblemsCompanyWise(String companyName){
         companyName = companyName.toUpperCase().trim();
+        companyName = this.replaceDashBySpace(companyName);
         return problemRepo.findByCompanyName(companyName);
     }
 
     public long getProblemsCountTopicWise(String topicName){
         topicName = topicName.toUpperCase().trim();
+        topicName = this.replaceDashBySpace(topicName);
+
         return problemRepo.countByTopicName(topicName);
     }
 
     public long getProblemsCountCompanyWise(String companyName){
         companyName = companyName.toUpperCase().trim();
+        companyName = this.replaceDashBySpace(companyName);
         return problemRepo.countByCompanyName(companyName);
     }
 
@@ -122,5 +130,39 @@ public class ProblemService {
             throw new NotFoundException("There is not any problem present in the Database");
         }
         problemRepo.deleteAll();
+    }
+
+    public String replaceDashBySpace(String s){
+
+        StringBuilder ans = new StringBuilder();
+
+        for(int i=0;i<s.length();i++){
+            char ch = s.charAt(i);
+
+            if(ch == '-'){
+                ans.append(' ');
+            }
+            else{
+                ans.append(ch);
+            }
+        }
+        return ans.toString();
+    }
+
+    public void addTestCases(List<TestCaseRequestDTO> testCaseRequestDTOList,UUID problemId){
+        Problem problem = this.getProblem(problemId);
+
+        if(problem == null){
+            throw new NotFoundException("Problem with id-"+problemId+" not found!!!");
+        }
+
+
+        List<TestCase> testCases = TestCaseConverter.testCaseConverter(testCaseRequestDTOList,problem);
+
+        for(TestCase testCase : testCases){
+            problem.getTestCasesList().add(testCase);
+        }
+        problemRepo.save(problem);
+
     }
 }
