@@ -21,7 +21,7 @@ public class UserConverter {
         Location location = LocationConverter.locationConverter(userRequestDTO.getLocationRequestDTO());
         user.setLocation(location);
 
-        user.setSubmissionList(new ArrayList<>());
+//        user.setSubmissionList(new ArrayList<>());
 
 //        user.setVerified(false);
 

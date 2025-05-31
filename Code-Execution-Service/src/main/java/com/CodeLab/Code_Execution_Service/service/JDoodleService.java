@@ -26,11 +26,11 @@ public class JDoodleService {
 
     public JDoodleResponse executeCode(JDoodleRequest request) {
         int totalKeys = keyManager.getKeysCount(); // You'll add this method
-        System.out.println(totalKeys);
+//        System.out.println(totalKeys);
 
         for (int i = 0; i < totalKeys; i++) {
             JDoodleKey key = keyManager.getAvailableKey();
-            System.out.println(key.getClientId());
+//            System.out.println(key.getClientId());
 
             // Set current key into request
             request.setClientId(key.getClientId());

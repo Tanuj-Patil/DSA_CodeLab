@@ -11,5 +11,4 @@ import lombok.*;
 public class ProblemAddedResponseDTO {
     private  String message;
     private Problem problem;
-
 }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -46,14 +47,14 @@ public class Problem {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "problem",cascade = CascadeType.ALL)
-    private List<Example> exampleList;
+    private List<Example> exampleList = new ArrayList<>();
 
     @Column(name = "problem_constraints",nullable = false,columnDefinition = "TEXT")
     private String problemConstraints;
 
     @JsonManagedReference
     @OneToMany(mappedBy = "problem",cascade = CascadeType.ALL)
-    private List<TestCase> testCasesList;
+    private List<TestCase> testCasesList = new ArrayList<>();
 
     @JsonManagedReference
     @OneToOne(mappedBy = "problem",cascade = CascadeType.ALL)
@@ -61,7 +62,7 @@ public class Problem {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "problem",cascade = CascadeType.ALL)
-    private List<CodeTemplate> codeTemplateList;
+    private List<CodeTemplate> codeTemplateList = new ArrayList<>();
 
     @Column(name = "problem_note")
     private String note;

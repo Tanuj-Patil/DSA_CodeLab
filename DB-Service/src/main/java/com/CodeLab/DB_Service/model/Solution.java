@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,5 +30,5 @@ public class Solution {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "solution",cascade = CascadeType.ALL)
-    private List<Approach> approachList;
+    private List<Approach> approachList = new ArrayList<>();
 }

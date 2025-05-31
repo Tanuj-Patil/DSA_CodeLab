@@ -2,11 +2,13 @@ package com.CodeLab.Code_Execution_Service.service;
 
 import com.CodeLab.Code_Execution_Service.configuration.JDoodleConfig;
 import com.CodeLab.Code_Execution_Service.model.JDoodleKey;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class JDoodleKeyManager {
 
@@ -23,12 +25,14 @@ public class JDoodleKeyManager {
 
         for (int i = 0; i < keys.size(); i++) {
             JDoodleKey key = keys.get(currentIndex);
+//            log.info("Using JDoodle clientId={}, index={}", key.getClientId(), currentIndex); // 🔍 Log the key being used
             currentIndex = (currentIndex + 1) % keys.size();
 
             if (!key.isExhausted()) {
                 return key;
             }
         }
+
         throw new RuntimeException("All JDoodle keys are exhausted.");
     }
 

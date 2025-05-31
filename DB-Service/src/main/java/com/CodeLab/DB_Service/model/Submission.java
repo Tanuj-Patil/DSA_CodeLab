@@ -36,32 +36,35 @@ public class Submission {
     @Enumerated(value = EnumType.STRING)
     private Language language;
 
-    @Column(name = "time_complexity",nullable = false)
+    @Column(name = "time_complexity")
     private String timeComplexity;
 
-    @Column(name = "space_complexity",nullable = false)
+    @Column(name = "space_complexity")
     private String spaceComplexity;
 
-    @Column(name = "runtime_taken",nullable = false)
+    @Column(name = "runtime_taken")
     private String runtime;
 
-    @Column(name = "memory_taken",nullable = false)
+    @Column(name = "memory_taken")
     private String memory;
 
+    @Column(name = "error")
+    private String error;
+
+    @Column(name = "wrong_answer")
+    private String wrongAnswer;
 
     @Column(name = "submitted_at",nullable = false)
     @CreationTimestamp
     private LocalDateTime submittedAt;
 
-    @JsonBackReference
+//    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
-    @OneToOne()
+    @ManyToOne
     @JoinColumn(name = "problem_id",nullable = false)
     private Problem problem;
-
-
 
 }

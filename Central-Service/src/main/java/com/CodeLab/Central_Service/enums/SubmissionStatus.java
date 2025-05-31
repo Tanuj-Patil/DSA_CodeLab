@@ -1,6 +1,7 @@
 package com.CodeLab.Central_Service.enums;
 
 public enum SubmissionStatus {
+    PENDING,
     ACCEPTED,
     WRONG_ANSWER,
     MEMORY_LIMIT_EXCEEDED,

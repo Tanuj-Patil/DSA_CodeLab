@@ -40,18 +40,18 @@ public class Problem {
     private String problemDescription;
 
 
-    private List<Example> exampleList;
-
+    private List<Example> exampleList = new ArrayList<>();
 
     private String problemConstraints;
 
-    private List<TestCase> testCasesList;
+    private List<TestCase> testCasesList = new ArrayList<>();
 
     private Solution solution;
 
-    private List<CodeTemplate> codeTemplateList;
+    private List<CodeTemplate> codeTemplateList = new ArrayList<>();
 
     private String note;
+
 
     public List<TestCase> getAllVisibleTestCases(){
         List<TestCase> testCases = new ArrayList<>();

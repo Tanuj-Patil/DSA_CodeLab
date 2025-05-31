@@ -1,6 +1,7 @@
 package com.CodeLab.DB_Service.enums;
 
 public enum SubmissionStatus {
+    PENDING,
     ACCEPTED,
     WRONG_ANSWER,
     MEMORY_LIMIT_EXCEEDED,
@@ -9,6 +10,4 @@ public enum SubmissionStatus {
     RUNTIME_ERROR,
     INTERNAL_ERROR,
     COMPILE_ERROR
-
-
 }

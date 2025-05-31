@@ -3,6 +3,7 @@ package com.CodeLab.Central_Service.requestDTO;
 import com.CodeLab.Central_Service.enums.Difficulty;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -19,7 +20,7 @@ public class ProblemRequestDTO {
 
     private String problemDescription;//
 
-    private List<ExampleRequestDTO> exampleRequestDTOList;//
+    private List<ExampleRequestDTO> exampleRequestDTOList = new ArrayList<>();//
 
     private String problemConstraints;//
 
@@ -29,11 +30,11 @@ public class ProblemRequestDTO {
 
     private String companyList;
 
-    private List<TestCaseRequestDTO> testCaseRequestDTOList;
+    private List<TestCaseRequestDTO> testCaseRequestDTOList = new ArrayList<>();
 
     private SolutionRequestDTO solutionRequestDTO;
 
-    private List<CodeTemplateRequestDTO> codeTemplateRequestDTOList;
+    private List<CodeTemplateRequestDTO> codeTemplateRequestDTOList = new ArrayList<>();
 
     private String note;
 }

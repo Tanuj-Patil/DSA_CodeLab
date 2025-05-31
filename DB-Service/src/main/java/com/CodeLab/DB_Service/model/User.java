@@ -57,9 +57,9 @@ public class User {
     @Enumerated(value = EnumType.STRING)
     private UserCategory userCategory;
 
-    @JsonManagedReference
-    @OneToMany(mappedBy = "user")
-    private List<Submission> submissionList;
+//    @JsonManagedReference
+//    @OneToMany(mappedBy = "user")
+//    private List<Submission> submissionList;
 
 //    @Column(name = "is_verified",nullable = false)
 //    private boolean verified;

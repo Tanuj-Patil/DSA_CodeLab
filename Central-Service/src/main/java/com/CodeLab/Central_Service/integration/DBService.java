@@ -1,9 +1,11 @@
 package com.CodeLab.Central_Service.integration;
 
 import com.CodeLab.Central_Service.model.Problem;
+import com.CodeLab.Central_Service.model.Submission;
 import com.CodeLab.Central_Service.requestDTO.OTPGenerateRequestDTO;
 
 import com.CodeLab.Central_Service.requestDTO.ProblemRequestDTO;
+import com.CodeLab.Central_Service.requestDTO.SubmissionRequestDTO;
 import com.CodeLab.Central_Service.requestDTO.UserRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.*;
 import org.modelmapper.ModelMapper;
@@ -69,6 +71,10 @@ public class DBService extends RestAPI{
         String endpoint = "/problem/add";
 
         Object response = this.makePostCall(baseURL,endpoint,requestDTO,new HashMap<>());
+        if(response == null){
+            System.out.println("The response is null");
+            return null;
+        }
 
         return modelMapper.map(response,ProblemAddedResponseDTO.class);
     }
@@ -199,6 +205,15 @@ public class DBService extends RestAPI{
         Object response = this.makeDeleteCall(baseURL,endpoint,new HashMap<>());
 
         return modelMapper.map(response,GeneralResponseDTO.class);
+    }
+
+    public Submission callAddSubmission(SubmissionRequestDTO requestDTO){
+        String endpoint = "/submission/add";
+
+        Object response = this.makePostCall(baseURL,endpoint,requestDTO,new HashMap<>());
+
+       return   modelMapper.map(response,Submission.class);
+
     }
 
 

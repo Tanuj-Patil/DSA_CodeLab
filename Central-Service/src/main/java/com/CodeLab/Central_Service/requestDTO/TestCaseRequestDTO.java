@@ -15,6 +15,6 @@ public class TestCaseRequestDTO {
 
     private String testCaseOutput;
 
-    private boolean isVisible;
+    private boolean visible;
 
 }

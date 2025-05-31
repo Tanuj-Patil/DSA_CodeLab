@@ -8,8 +8,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+
 public class ProblemAddedResponseDTO {
     private  String message;
     private Problem problem;
-
 }

@@ -46,7 +46,7 @@ public class User {
     private UserCategory userCategory;
 
 
-    private List<Submission> submissionList;
+//    private List<Submission> submissionList;
 
 
 

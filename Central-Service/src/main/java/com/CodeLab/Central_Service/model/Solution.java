@@ -3,6 +3,7 @@ package com.CodeLab.Central_Service.model;
 
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,5 +20,5 @@ public class Solution {
 
     private Problem problem;
 
-    private List<Approach> approachList;
+    private List<Approach> approachList  = new ArrayList<>();
 }

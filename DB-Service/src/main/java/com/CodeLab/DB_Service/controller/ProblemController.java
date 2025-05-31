@@ -23,19 +23,17 @@ public class ProblemController {
     ProblemService problemService;
 
     @PostMapping("/add")
-    public ResponseEntity<?> addProblem(@RequestBody ProblemRequestDTO problemRequestDTO){
+    public ProblemAddedResponseDTO addProblem(@RequestBody ProblemRequestDTO problemRequestDTO){
         Problem problem  = problemService.addProblem(problemRequestDTO);
         ProblemAddedResponseDTO responseDTO = new ProblemAddedResponseDTO();
         responseDTO.setProblem(problem);
         if(problem != null){
             responseDTO.setMessage("Problem Added Successfully:)");
-            return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
         }
         else{
             responseDTO.setMessage("Problem Not Added!!!");
-            return new ResponseEntity<>(responseDTO,HttpStatus.OK);
         }
-
+        return responseDTO;
     }
 
     @GetMapping("/get")

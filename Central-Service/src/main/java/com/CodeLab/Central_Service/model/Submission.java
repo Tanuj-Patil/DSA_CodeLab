@@ -3,6 +3,7 @@ package com.CodeLab.Central_Service.model;
 import com.CodeLab.Central_Service.enums.Language;
 import com.CodeLab.Central_Service.enums.SubmissionStatus;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 
@@ -38,6 +39,9 @@ public class Submission {
 
     private String memory;
 
+    private String error;
+
+    private String wrongAnswer;
 
     private LocalDateTime submittedAt;
 
