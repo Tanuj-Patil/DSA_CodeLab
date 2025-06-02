@@ -8,9 +8,14 @@ import lombok.*;
 @AllArgsConstructor
 @ToString
 
-public class OTPGenerateRequestDTO {
+public class AdminRequestDTO {
 
-    private String otp;
+    private String name;
+
+
     private String email;
+
+
+    private String password;
 
 }

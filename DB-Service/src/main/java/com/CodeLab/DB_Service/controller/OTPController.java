@@ -1,5 +1,6 @@
 package com.CodeLab.DB_Service.controller;
 
+import com.CodeLab.DB_Service.requestDTO.AdminRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.OTPGenerateRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.UserRequestDTO;
 import com.CodeLab.DB_Service.responseDTO.OTPVerificationResponseDTO;
@@ -22,13 +23,24 @@ public class OTPController {
         otpService.generateOTP(requestDTO);
     }
 
-    @PutMapping("/verify")
-    public ResponseEntity<?> verifyOtp(@RequestBody UserRequestDTO requestDTO,@RequestParam String otp){
+    @PutMapping("/verify-user")
+    public ResponseEntity<?> verifyUserOtp(@RequestBody UserRequestDTO requestDTO, @RequestParam String otp){
         OTPVerificationResponseDTO responseDTO = new OTPVerificationResponseDTO();
 
-        if(otpService.verifyOTP(requestDTO,otp)){
+        if(otpService.verifyUserOTP(requestDTO,otp)){
             responseDTO.setValid(true);
         }
         return new ResponseEntity<>(responseDTO,HttpStatus.CREATED);
     }
+
+    @PutMapping("/verify-admin")
+    public ResponseEntity<?> verifyAdminOtp(@RequestBody AdminRequestDTO requestDTO, @RequestParam String otp){
+        OTPVerificationResponseDTO responseDTO = new OTPVerificationResponseDTO();
+
+        if(otpService.verifyAdminOTP(requestDTO,otp)){
+            responseDTO.setValid(true);
+        }
+        return new ResponseEntity<>(responseDTO,HttpStatus.CREATED);
+    }
+
 }

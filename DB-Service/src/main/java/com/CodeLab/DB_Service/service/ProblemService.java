@@ -1,5 +1,6 @@
 package com.CodeLab.DB_Service.service;
 
+import com.CodeLab.DB_Service.enums.Difficulty;
 import com.CodeLab.DB_Service.exceptions.NotFoundException;
 import com.CodeLab.DB_Service.model.Company;
 import com.CodeLab.DB_Service.model.Problem;
@@ -89,27 +90,22 @@ public class ProblemService {
     }
 
     public List<Problem> getProblemsTopicWise(String topicName){
-        topicName = topicName.toUpperCase().trim();
-        topicName = this.replaceDashBySpace(topicName);
+        topicName = topicName.toUpperCase().trim().replaceAll("_"," ");
         return problemRepo.findByTopicName(topicName);
     }
 
     public List<Problem> getProblemsCompanyWise(String companyName){
         companyName = companyName.toUpperCase().trim();
-        companyName = this.replaceDashBySpace(companyName);
         return problemRepo.findByCompanyName(companyName);
     }
 
     public long getProblemsCountTopicWise(String topicName){
-        topicName = topicName.toUpperCase().trim();
-        topicName = this.replaceDashBySpace(topicName);
-
+        topicName = topicName.toUpperCase().trim().replaceAll("_"," ");
         return problemRepo.countByTopicName(topicName);
     }
 
     public long getProblemsCountCompanyWise(String companyName){
         companyName = companyName.toUpperCase().trim();
-        companyName = this.replaceDashBySpace(companyName);
         return problemRepo.countByCompanyName(companyName);
     }
 
@@ -164,5 +160,9 @@ public class ProblemService {
         }
         problemRepo.save(problem);
 
+    }
+
+    public List<Problem> getProblemByDifficulty(Difficulty difficulty){
+        return problemRepo.findProblemByDifficulty(difficulty.toString());
     }
 }

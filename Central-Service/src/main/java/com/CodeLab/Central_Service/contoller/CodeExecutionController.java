@@ -1,6 +1,6 @@
 package com.CodeLab.Central_Service.contoller;
 
-import com.CodeLab.Central_Service.exception.ErrorException;
+import com.CodeLab.Central_Service.model.CodeExecutionResult;
 import com.CodeLab.Central_Service.model.Submission;
 import com.CodeLab.Central_Service.requestDTO.CodeRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.*;
@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/central/execute")
@@ -24,24 +22,23 @@ public class CodeExecutionController {
 
     @PostMapping("/run")
     public ResponseEntity<?> runCode(@RequestBody CodeRequestDTO requestDTO, @RequestHeader(value = "Authorization", required = false) String header) {
-        TokenValidationResponseDTO responseDTO = authenticationService.validateToken(header);
+        TokenValidationResponseDTO responseDTO = authenticationService.validateUserToken(header);
 
         if (!responseDTO.isValid()) {
             return new ResponseEntity<>(responseDTO, HttpStatus.UNAUTHORIZED);
         }
         try {
-            List<CentralServiceRunCodeResponse> responseDTOS = codeExecutionService.runCode(requestDTO);
+            CodeExecutionResult responseDTOS = codeExecutionService.runCode(requestDTO);
             return new ResponseEntity<>(responseDTOS, HttpStatus.OK);
-        } catch (ErrorException e) {
-            String errorMessage = e.getMessage().replace("com.CodeLab.Central_Service.exception.ErrorException: ", "");
-            return new ResponseEntity<>(errorMessage, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e, HttpStatus.OK);
         }
     }
 
 
     @PostMapping("/submit")
     public ResponseEntity<?> submitCode(@RequestBody CodeRequestDTO requestDTO, @RequestHeader(value = "Authorization", required = false) String header) {
-        TokenValidationResponseDTO responseDTO = authenticationService.validateToken(header);
+        TokenValidationResponseDTO responseDTO = authenticationService.validateUserToken(header);
         System.out.println(responseDTO.getMessage());
 
         if (!responseDTO.isValid()) {

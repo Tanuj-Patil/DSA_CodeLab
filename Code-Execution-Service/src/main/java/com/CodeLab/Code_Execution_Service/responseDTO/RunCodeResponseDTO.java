@@ -14,4 +14,9 @@ public class RunCodeResponseDTO {
     private String memory;
     private String cpuTime;
     private boolean error;
+    private String runtimeError;
+
+    public boolean hasRuntimeError() {
+        return runtimeError != null && !runtimeError.isBlank();
+    }
 }

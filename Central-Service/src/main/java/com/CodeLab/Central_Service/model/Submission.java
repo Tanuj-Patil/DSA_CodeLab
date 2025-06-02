@@ -18,39 +18,31 @@ import java.util.UUID;
 
 public class Submission {
 
-
     private UUID submissionId;
-
 
     private SubmissionStatus submissionStatus;
 
-
     private Language language;
-
 
     private String timeComplexity;
 
-
     private String spaceComplexity;
-
-
-    private String runtime;
-
-
-    private String memory;
 
     private String error;
 
-    private String wrongAnswer;
-
     private LocalDateTime submittedAt;
-
 
     private User user;
 
-
     private Problem problem;
 
+    private  String lastInput;
 
+    private String lastOutput;
+
+    private String lastExpectedOutput;
+
+    private String code;
 
 }
+

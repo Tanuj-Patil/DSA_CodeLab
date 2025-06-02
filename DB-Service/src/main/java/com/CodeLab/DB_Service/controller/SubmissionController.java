@@ -13,6 +13,7 @@ import com.CodeLab.DB_Service.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -43,5 +44,19 @@ public class SubmissionController {
         return responseDTO;
     }
 
+    @GetMapping("/get-by-id/{submissionId}")
+    public Submission getSubmissionById(@PathVariable UUID submissionId){
+        return submissionService.getSubmissionById(submissionId);
+    }
+
+    @GetMapping("/get-by-user-id/{userId}")
+    public List<Submission> getSubmissionsByUserId(@PathVariable UUID userId){
+        return submissionService.getSubmissionsByUserId(userId);
+    }
+
+    @GetMapping("/get-by-user-id-and-problem-id/{userId}")
+    public List<Submission> getSubmissionsByUserId(@PathVariable UUID userId,@RequestParam UUID problemId){
+        return submissionService.getSubmissionsByUserIdAndProblem(userId,problemId);
+    }
 
 }

@@ -1,5 +1,6 @@
 package com.CodeLab.DB_Service.controller;
 
+import com.CodeLab.DB_Service.enums.Difficulty;
 import com.CodeLab.DB_Service.exceptions.NotFoundException;
 import com.CodeLab.DB_Service.model.Problem;
 import com.CodeLab.DB_Service.requestDTO.ProblemRequestDTO;
@@ -121,4 +122,11 @@ public class ProblemController {
         return generalResponseDTO;
 
     }
+
+    @GetMapping("/get-by-difficulty")
+    public List<Problem> getProblemByDifficulty(@RequestParam Difficulty difficulty){
+        return problemService.getProblemByDifficulty(difficulty);
+    }
+
+
 }

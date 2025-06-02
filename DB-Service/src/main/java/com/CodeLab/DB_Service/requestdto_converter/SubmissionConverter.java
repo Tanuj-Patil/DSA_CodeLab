@@ -20,10 +20,13 @@ public class SubmissionConverter {
         submission.setLanguage(requestDTO.getLanguage());
         submission.setProblem(problem);
         submission.setUser(user);
-        submission.setMemory("");
-        submission.setRuntime("");
-        submission.setSpaceComplexity("");
-        submission.setTimeComplexity("");
+        submission.setSpaceComplexity(null);
+        submission.setTimeComplexity(null);
+        submission.setCode(null);
+        submission.setError(null);
+        submission.setLastInput(null);
+        submission.setLastOutput(null);
+        submission.setLastExpectedOutput(null);
 
         return submission;
     }

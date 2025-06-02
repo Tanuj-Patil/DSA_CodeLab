@@ -2,15 +2,14 @@ package com.CodeLab.DB_Service.model;
 
 import com.CodeLab.DB_Service.enums.Language;
 import com.CodeLab.DB_Service.enums.SubmissionStatus;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDate;
+
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.List;
+
 import java.util.UUID;
 
 @Getter
@@ -42,17 +41,11 @@ public class Submission {
     @Column(name = "space_complexity")
     private String spaceComplexity;
 
-    @Column(name = "runtime_taken")
-    private String runtime;
-
-    @Column(name = "memory_taken")
-    private String memory;
-
-    @Column(name = "error")
+    @Column(name = "error",columnDefinition = "TEXT")
     private String error;
 
-    @Column(name = "wrong_answer")
-    private String wrongAnswer;
+    @Column(name = "code",columnDefinition = "TEXT")
+    private String code;
 
     @Column(name = "submitted_at",nullable = false)
     @CreationTimestamp
@@ -66,5 +59,14 @@ public class Submission {
     @ManyToOne
     @JoinColumn(name = "problem_id",nullable = false)
     private Problem problem;
+
+    @Column(name = "last_testcase_input",columnDefinition = "TEXT")
+    private  String lastInput;
+
+    @Column(name = "last_testcase_output",columnDefinition = "TEXT")
+    private String lastOutput;
+
+    @Column(name = "last_testcase_expected_output",columnDefinition = "TEXT")
+    private String lastExpectedOutput;
 
 }

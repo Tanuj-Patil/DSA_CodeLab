@@ -20,7 +20,6 @@ public class SubmissionService {
     SubmissionRepo submissionRepo;
 
     public Submission addSubmission(SubmissionRequestDTO requestDTO, Problem problem, User user){
-
         Submission submission = SubmissionConverter.submissionConverter(requestDTO,problem,user);
         submissionRepo.save(submission);
         return submission;
@@ -45,10 +44,25 @@ public class SubmissionService {
         submission.setTimeComplexity(requestDTO.getTC());
         submission.setSpaceComplexity(requestDTO.getSC());
         submission.setError(requestDTO.getError());
-        submission.setWrongAnswer(requestDTO.getWrongAnswer());
+        submission.setCode(requestDTO.getCode());
+        submission.setLastInput(requestDTO.getLastInput());
+        submission.setLastOutput(requestDTO.getLastOutput());
+        submission.setLastExpectedOutput(requestDTO.getLastExpectedOutput());
 
         submissionRepo.save(submission);
         return submission;
+    }
+
+    public Submission getSubmissionById(UUID submissionId){
+        return submissionRepo.findById(submissionId).orElse(null);
+    }
+
+    public List<Submission> getSubmissionsByUserId(UUID userId){
+        return submissionRepo.findAllByUser(userId);
+    }
+
+    public List<Submission> getSubmissionsByUserIdAndProblem(UUID userId,UUID problemId){
+        return submissionRepo.findAllByUserAndProblem(userId,problemId);
     }
 
 

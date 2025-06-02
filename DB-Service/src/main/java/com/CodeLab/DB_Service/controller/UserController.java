@@ -3,7 +3,7 @@ package com.CodeLab.DB_Service.controller;
 import com.CodeLab.DB_Service.model.Submission;
 import com.CodeLab.DB_Service.model.User;
 import com.CodeLab.DB_Service.requestDTO.UserRequestDTO;
-import com.CodeLab.DB_Service.responseDTO.IsUserAlreadyPresentResponseDTO;
+import com.CodeLab.DB_Service.responseDTO.IsEmailAlreadyPresentResponseDTO;
 import com.CodeLab.DB_Service.responseDTO.PasswordChangeResponseDTO;
 import com.CodeLab.DB_Service.responseDTO.UserRegisteredResponseDTO;
 import com.CodeLab.DB_Service.responseDTO.UserResponse;
@@ -26,7 +26,7 @@ public class UserController {
 
     @GetMapping("/is-user-already-present/{email}")
     public ResponseEntity<?> IsUserEmailAlreadyExists(@PathVariable String email){
-        IsUserAlreadyPresentResponseDTO alreadyPresent = new IsUserAlreadyPresentResponseDTO();
+        IsEmailAlreadyPresentResponseDTO alreadyPresent = new IsEmailAlreadyPresentResponseDTO();
 
         User user =  userService.getUserByEmail(email);
         if(user == null){
@@ -42,8 +42,6 @@ public class UserController {
     public ResponseEntity<?> registerUser(@RequestBody UserRequestDTO userRequestDTO){
         User user = userService.registerUser(userRequestDTO);
         UserRegisteredResponseDTO responseDTO = new UserRegisteredResponseDTO();
-//        responseDTO.setMessage("User with id-"+user.getUserId()+" has been registered successfully:)");
-//        responseDTO.setUser(user);
         responseDTO.setUserId(user.getUserId());
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
@@ -61,18 +59,6 @@ public class UserController {
         response.setEmail(user.getEmail());
         response.setPassword(user.getPassword());
         return response;
-    }
-
-    @GetMapping("/get-submissions/{userId}")
-    public ResponseEntity<?> getSubmissions(@PathVariable UUID userId){
-        List<Submission> submissionList = userService.getSubmissions(userId);
-        return new ResponseEntity<>(submissionList,HttpStatus.OK);
-    }
-
-    @GetMapping("/get-submissions")
-    public ResponseEntity<?> getSubmissions(@RequestParam UUID userId,@RequestParam UUID problemId){
-        List<Submission> submissionList = userService.getSubmissions(userId,problemId);
-        return new ResponseEntity<>(submissionList,HttpStatus.OK);
     }
 
     @PatchMapping("/change-password")

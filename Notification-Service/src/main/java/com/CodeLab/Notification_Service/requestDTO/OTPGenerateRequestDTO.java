@@ -9,12 +9,7 @@ import lombok.*;
 @ToString
 
 public class OTPGenerateRequestDTO {
-
     private String otp;
-
-
     private String email;
-
-
 
 }

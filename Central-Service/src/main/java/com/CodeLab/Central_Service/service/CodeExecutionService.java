@@ -4,6 +4,7 @@ import com.CodeLab.Central_Service.exception.ErrorException;
 import com.CodeLab.Central_Service.integration.DBService;
 import com.CodeLab.Central_Service.integration.ExecutionService;
 import com.CodeLab.Central_Service.integration.RabbitMQIntegration;
+import com.CodeLab.Central_Service.model.CodeExecutionResult;
 import com.CodeLab.Central_Service.model.Problem;
 import com.CodeLab.Central_Service.model.Submission;
 import com.CodeLab.Central_Service.model.TestCase;
@@ -12,16 +13,16 @@ import com.CodeLab.Central_Service.requestDTO.RunCodeRequestDTO;
 import com.CodeLab.Central_Service.requestDTO.SubmissionRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.CentralServiceRunCodeResponse;
 import com.CodeLab.Central_Service.responseDTO.RunCodeResponseDTO;
+import com.CodeLab.Central_Service.responseDTO.RunTimeErrorResponseDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -40,11 +41,12 @@ public class CodeExecutionService {
     RabbitMQIntegration rabbitMQIntegration;
 
     //Synchronous
-//    public List<CentralServiceRunCodeResponse> runCode(CodeRequestDTO requestDTO) throws ErrorException {
+//    public CodeExecutionResult runCode(CodeRequestDTO requestDTO) {
 //        UUID problemId = requestDTO.getProblemId();
-//
 //        String language = requestDTO.getLanguage().toString();
-//        String baseCode = (language.equals("PYTHON") || language.equals("JAVA_SCRIPT"))
+//
+//        Set<String> visibleFirstLanguages = Set.of("PYTHON", "JAVA_SCRIPT");
+//        String baseCode = visibleFirstLanguages.contains(language)
 //                ? requestDTO.getVisibleCode() + "\n" + requestDTO.getInvisibleCode()
 //                : requestDTO.getInvisibleCode() + "\n" + requestDTO.getVisibleCode();
 //
@@ -58,46 +60,78 @@ public class CodeExecutionService {
 //            throw new ErrorException("No visible test cases found for the problem.");
 //        }
 //
-//        RunCodeRequestDTO runCodeRequestDTO = new RunCodeRequestDTO();
-//        runCodeRequestDTO.setCode(baseCode);
-//        runCodeRequestDTO.setLanguage(normalizeLanguage(language));
-//        runCodeRequestDTO.setVersionIndex(getVersionIndex(language));
+//        String versionIndex = getVersionIndex(language);
+//        String finalLang = normalizeLanguage(language);
+//        ExecutorService executor = Executors.newFixedThreadPool(Math.min(testCases.size(), 5));
 //
-//        List<CentralServiceRunCodeResponse> responseList = new ArrayList<>();
+//        List<CentralServiceRunCodeResponse> resultList = new ArrayList<>();
+//        CodeExecutionResult finalResult = new CodeExecutionResult();
 //
-//        for (TestCase t : testCases) {
-//            runCodeRequestDTO.setInput(t.getTestCaseInput());
+//        for (TestCase testCase : testCases) {
+//            RunCodeRequestDTO runCodeRequestDTO = new RunCodeRequestDTO();
+//            runCodeRequestDTO.setCode(baseCode);
+//            runCodeRequestDTO.setLanguage(finalLang);
+//            runCodeRequestDTO.setVersionIndex(versionIndex);
+//            runCodeRequestDTO.setInput(testCase.getTestCaseInput());
+//            runCodeRequestDTO.setExpectedOutput(testCase.getTestCaseOutput());
 //
 //            RunCodeResponseDTO responseDTO = executionService.callRunCode(runCodeRequestDTO);
 //
 //            if (responseDTO.isError()) {
-//                throw new ErrorException(responseDTO.getOutput());
+//                if (responseDTO.hasRuntimeError()) {
+//                    RunTimeErrorResponseDTO errorDto = new RunTimeErrorResponseDTO();
+//                    errorDto.setRuntimeError(responseDTO.getRuntimeError());
+//                    errorDto.setLastExecutedTestcase(testCase);
+//
+//                    finalResult.setSuccess(false);
+//                    finalResult.setRuntimeError(errorDto);
+//                    executor.shutdown();
+//                    return finalResult;
+//                }
+//
+//                finalResult.setSuccess(false);
+//                finalResult.setErrorMessage("Compilation/Error: " + responseDTO.getOutput());
+//                executor.shutdown();
+//                return finalResult;
+//            }
+//
+//            String actualOutput = responseDTO.getOutput().trim();
+//            String expectedOutput = testCase.getTestCaseOutput().trim();
+//            boolean isMatched = actualOutput.equals(expectedOutput);
+//
+//            if (!isMatched) {
+//                finalResult.setSuccess(false);
+//                finalResult.setErrorMessage("Wrong Answer:\nInput: " + testCase.getTestCaseInput()
+//                        + "\nExpected: " + expectedOutput + "\nActual: " + actualOutput);
+//                executor.shutdown();
+//                return finalResult;
 //            }
 //
 //            CentralServiceRunCodeResponse response = new CentralServiceRunCodeResponse();
-//            response.setInput(t.getTestCaseInput());
-//            response.setOutput(responseDTO.getOutput());
-//            response.setExpected(t.getTestCaseOutput());
-//            response.setOutputMatched(responseDTO.getOutput().equals(t.getTestCaseOutput()));
+//            response.setInput(testCase.getTestCaseInput());
+//            response.setOutput(actualOutput);
+//            response.setExpected(expectedOutput);
+//            response.setOutputMatched(true);
 //
-//            responseList.add(response);
+//            resultList.add(response);
 //        }
 //
-//        return responseList;
+//        executor.shutdown();
+//        finalResult.setSuccess(true);
+//        finalResult.setResponses(resultList);
+//        return finalResult;
 //    }
 
     //Asynchronous
-    public List<CentralServiceRunCodeResponse> runCode(CodeRequestDTO requestDTO) {
+    public CodeExecutionResult runCode(CodeRequestDTO requestDTO) {
         UUID problemId = requestDTO.getProblemId();
         String language = requestDTO.getLanguage().toString();
 
-        // Determine code order
-        Set<String> visibleFirstLanguages = Set.of("PYTHON", "JAVA_SCRIPT"); // Extendable
+        Set<String> visibleFirstLanguages = Set.of("PYTHON", "JAVA_SCRIPT");
         String baseCode = visibleFirstLanguages.contains(language)
                 ? requestDTO.getVisibleCode() + "\n" + requestDTO.getInvisibleCode()
                 : requestDTO.getInvisibleCode() + "\n" + requestDTO.getVisibleCode();
 
-        // Fetch problem and test cases
         Problem problem = dbService.callGetProblem(problemId);
         if (problem == null) {
             throw new ErrorException("Problem Not Found!!!");
@@ -112,54 +146,102 @@ public class CodeExecutionService {
         String finalLang = normalizeLanguage(language);
 
         ExecutorService executor = Executors.newFixedThreadPool(Math.min(testCases.size(), 5));
+        List<CompletableFuture<Optional<CentralServiceRunCodeResponse>>> futures = new ArrayList<>();
 
-        List<CompletableFuture<CentralServiceRunCodeResponse>> futures = testCases.stream()
-                .map(testCase -> CompletableFuture.supplyAsync(() -> {
-                    RunCodeRequestDTO runCodeRequestDTO = new RunCodeRequestDTO();
-                    runCodeRequestDTO.setCode(baseCode);
-                    runCodeRequestDTO.setLanguage(finalLang);
-                    runCodeRequestDTO.setVersionIndex(versionIndex);
-                    runCodeRequestDTO.setInput(testCase.getTestCaseInput());
-                    runCodeRequestDTO.setExpectedOutput(testCase.getTestCaseOutput());
+        CodeExecutionResult finalResult = new CodeExecutionResult();
+        List<CentralServiceRunCodeResponse> resultList = Collections.synchronizedList(new ArrayList<>());
 
-                    RunCodeResponseDTO responseDTO = executionService.callRunCode(runCodeRequestDTO);
-                    if (responseDTO.isError()) {
-                        throw new ErrorException(responseDTO.getOutput());
+        for (TestCase testCase : testCases) {
+            CompletableFuture<Optional<CentralServiceRunCodeResponse>> future = CompletableFuture.supplyAsync(() -> {
+                RunCodeRequestDTO runCodeRequestDTO = new RunCodeRequestDTO();
+                runCodeRequestDTO.setCode(baseCode);
+                runCodeRequestDTO.setLanguage(finalLang);
+                runCodeRequestDTO.setVersionIndex(versionIndex);
+                runCodeRequestDTO.setInput(testCase.getTestCaseInput());
+                runCodeRequestDTO.setExpectedOutput(testCase.getTestCaseOutput());
+
+                RunCodeResponseDTO responseDTO = executionService.callRunCode(runCodeRequestDTO);
+
+                if (responseDTO.isError()) {
+                    if (responseDTO.hasRuntimeError()) {
+                        RunTimeErrorResponseDTO errorDto = new RunTimeErrorResponseDTO();
+                        errorDto.setRuntimeError(responseDTO.getRuntimeError());
+//                        System.out.println(testCase);
+                        errorDto.setLastExecutedTestcase(testCase);
+//                        System.out.println(errorDto.getLastExecutedTestcase());
+                        throw new RuntimeException("RUNTIME:" + serializeRuntimeError(errorDto));
                     }
 
-                    CentralServiceRunCodeResponse response = new CentralServiceRunCodeResponse();
-                    response.setInput(testCase.getTestCaseInput());
-                    response.setOutput(responseDTO.getOutput());
-                    response.setExpected(testCase.getTestCaseOutput());
-                    response.setOutputMatched(responseDTO.getOutput().equals(testCase.getTestCaseOutput()));
+                    throw new RuntimeException(responseDTO.getOutput());
+                }
 
-                    return response;
-                }, executor))
-                .collect(Collectors.toList());
+                String actualOutput = responseDTO.getOutput().trim();
+                String expectedOutput = testCase.getTestCaseOutput().trim();
+                boolean isMatched = actualOutput.equals(expectedOutput);
 
-        List<CentralServiceRunCodeResponse> results = futures.stream()
-                .map(future -> {
-                    try {
-                        return future.join();
-                    } catch (CompletionException e) {
-                        Throwable cause = e.getCause();
-                        if (cause instanceof ErrorException) {
-                            CentralServiceRunCodeResponse errorResponse = new CentralServiceRunCodeResponse();
-//                            errorResponse.setInput("Error during execution");
-//                            errorResponse.setOutput(cause.getMessage());
-//                            errorResponse.setExpected("");
-//                            errorResponse.setOutputMatched(false);
-                            throw new ErrorException(cause.getMessage());
-//                            return errorResponse;
-                        }
-                        throw e;
-                    }
-                })
-                .collect(Collectors.toList());
+                CentralServiceRunCodeResponse response = new CentralServiceRunCodeResponse();
+                response.setInput(testCase.getTestCaseInput());
+                response.setOutput(actualOutput);
+                response.setExpected(expectedOutput);
+                response.setOutputMatched(isMatched);
+
+
+                return Optional.of(response);
+            }, executor).exceptionally(ex -> {
+                String message = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+
+                if (message.startsWith("RUNTIME:")) {
+                    finalResult.setSuccess(false);
+                    finalResult.setRuntimeError(deserializeRuntimeError(message.substring(8)));
+
+                } else {
+                    finalResult.setSuccess(false);
+                    finalResult.setErrorMessage(message);
+                }
+                return Optional.empty(); // we won't add a response
+            });
+
+            futures.add(future);
+        }
+
+        // Wait for all futures to complete
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+
+        // Collect successful responses
+        for (CompletableFuture<Optional<CentralServiceRunCodeResponse>> future : futures) {
+            future.join().ifPresent(resultList::add);
+        }
 
         executor.shutdown();
-        return results;
+
+        if (finalResult.getRuntimeError() == null && finalResult.getErrorMessage() == null) {
+            finalResult.setSuccess(true);
+            finalResult.setResponses(resultList);
+        }
+
+        return finalResult;
     }
+
+    private String serializeRuntimeError(RunTimeErrorResponseDTO dto) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(dto);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize runtime error", e);
+        }
+    }
+
+
+    private RunTimeErrorResponseDTO deserializeRuntimeError(String str) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.readValue(str, RunTimeErrorResponseDTO.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to deserialize runtime error", e);
+        }
+    }
+
+
 
 
 
@@ -174,8 +256,8 @@ public class CodeExecutionService {
         }
 
 
-//        List<TestCase> testCases = problem.getTestCasesList();
-        List<TestCase> testCases = problem.getAllVisibleTestCases();
+        List<TestCase> testCases = problem.getTestCasesList();
+//        List<TestCase> testCases = problem.getAllVisibleTestCases();
 
 
         if (testCases == null || testCases.isEmpty()) {
@@ -228,22 +310,21 @@ public class CodeExecutionService {
     }
 
     private String getVersionIndex(String language) {
-        switch (language.toUpperCase()) {
-            case "JAVA": return "4";
-            case "CPP": return "5";
-            case "JAVA_SCRIPT": return "3";
-            case "C": return "5";
-            default: return "4"; // Python or fallback
-        }
+        return switch (language.toUpperCase()) {
+            case "JAVA" -> "4";
+            case "CPP", "C" -> "5";
+            case "JAVA_SCRIPT" -> "3";
+            default -> "4"; // Python or fallback
+        };
     }
 
     private String normalizeLanguage(String language) {
-        switch (language.toUpperCase()) {
-            case "JAVA": return "java";
-            case "CPP": return "cpp";
-            case "JAVA_SCRIPT": return "nodejs";
-            case "C": return "c";
-            default: return "python3";
-        }
+        return switch (language.toUpperCase()) {
+            case "JAVA" -> "java";
+            case "CPP" -> "cpp";
+            case "JAVA_SCRIPT" -> "nodejs";
+            case "C" -> "c";
+            default -> "python3";
+        };
     }
 }

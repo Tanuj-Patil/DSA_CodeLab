@@ -1,21 +1,22 @@
 package com.CodeLab.Central_Service.service;
 
-import com.CodeLab.Central_Service.exception.UserEmailAlreadyPresentException;
+import com.CodeLab.Central_Service.exception.AdminEmailAlreadyPresentException;
 import com.CodeLab.Central_Service.integration.DBService;
 import com.CodeLab.Central_Service.integration.NotificationService;
 import com.CodeLab.Central_Service.integration.RabbitMQIntegration;
+import com.CodeLab.Central_Service.requestDTO.AdminRequestDTO;
 import com.CodeLab.Central_Service.requestDTO.OTPGenerateRequestDTO;
-import com.CodeLab.Central_Service.requestDTO.UserRequestDTO;
-import com.CodeLab.Central_Service.responseDTO.*;
+import com.CodeLab.Central_Service.responseDTO.IsEmailAlreadyPresentResponseDTO;
+import com.CodeLab.Central_Service.responseDTO.OTPVerificationResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 import java.security.SecureRandom;
 
 @Service
-public class UserService {
+public class AdminService {
+
     @Autowired
     DBService dbService;
 
@@ -31,19 +32,19 @@ public class UserService {
         return String.valueOf(otp);
     }
 
-    public void registerUser(UserRequestDTO userRequestDTO){
-        String email = userRequestDTO.getEmail().trim();
-        IsEmailAlreadyPresentResponseDTO responseDTO = dbService.callIsUserEmailAlreadyExists(email);
+    public void registerAdmin(AdminRequestDTO adminRequestDTO){
+        String email = adminRequestDTO.getEmail().trim();
+        IsEmailAlreadyPresentResponseDTO responseDTO = dbService.callIsAdminEmailAlreadyExists(email);
 
         if(responseDTO.isPresent()){
-            throw new UserEmailAlreadyPresentException("The provided Email-"+email+" is already registered!!!");
+            throw new AdminEmailAlreadyPresentException("The provided Email-"+email+" is already registered!!!");
         }
 
         OTPGenerateRequestDTO requestDTO = new OTPGenerateRequestDTO();
 
         String otpNumber = this.generateRandomOTP();
 
-        requestDTO.setEmail(email);
+        requestDTO.setEmail(adminRequestDTO.getEmail());
         requestDTO.setOtp(otpNumber);
 
 
@@ -58,11 +59,11 @@ public class UserService {
 
     }
 
-    public OTPVerificationResponseDTO verifyOtp(UserRequestDTO requestDTO,String otp){
+    public OTPVerificationResponseDTO verifyOtp(AdminRequestDTO requestDTO, String otp){
         requestDTO.setEmail(requestDTO.getEmail().trim());;
 
 
-        OTPVerificationResponseDTO responseDTO = dbService.callVerifyUserOtp(requestDTO,otp);
+        OTPVerificationResponseDTO responseDTO = dbService.callVerifyAdminOtp(requestDTO,otp);
 
         if(responseDTO.isValid()){
             String rawPassword = requestDTO.getPassword().trim();
@@ -72,7 +73,7 @@ public class UserService {
             System.out.println("Raw Pass: "+rawPassword);
             System.out.println("Encoded Pass: "+requestDTO.getPassword());
 
-            dbService.callRegisterUser(requestDTO);
+            dbService.callRegisterAdmin(requestDTO);
         }
 
         return responseDTO;

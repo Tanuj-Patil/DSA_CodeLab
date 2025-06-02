@@ -18,11 +18,12 @@ public class SendMailService {
     TemplateEngine templateEngine;
 
     public  void sendMail(OTPGenerateRequestDTO requestDTO) throws Exception{
+
         Context context = new Context();
         context.setVariable("otpCode",requestDTO.getOtp());
 
 
-        String htmlMail = templateEngine.process("UserRegistrationOTP",context);
+        String htmlMail = templateEngine.process("RegistrationOTP",context);
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(message,true);
 
@@ -32,6 +33,6 @@ public class SendMailService {
         messageHelper.setText(htmlMail,true);
 
         javaMailSender.send(message);
-
     }
+
 }

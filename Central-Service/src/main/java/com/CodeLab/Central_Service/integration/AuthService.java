@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -41,8 +40,30 @@ public class AuthService extends RestAPI{
         return modelMapper.map(object,LoginResponseDTO.class);
     }
 
-    public TokenValidationResponseDTO callValidateToken(String token) {
-        String endpoint = "/token/validate";
+    public TokenValidationResponseDTO callValidateUserToken(String token) {
+        String endpoint = "/token/validate-user";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        // Build RequestEntity with headers
+        RequestEntity<Void> requestEntity = RequestEntity
+                .get(URI.create(baseURL + endpoint))
+                .headers(headers)
+                .build();
+
+        // Make the request
+        ResponseEntity<Object> response = restTemplate.exchange(
+                requestEntity,
+                Object.class
+        );
+
+        return modelMapper.map(response.getBody(), TokenValidationResponseDTO.class);
+    }
+
+    public TokenValidationResponseDTO callValidateAdminToken(String token) {
+        String endpoint = "/token/validate-admin";
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", token);

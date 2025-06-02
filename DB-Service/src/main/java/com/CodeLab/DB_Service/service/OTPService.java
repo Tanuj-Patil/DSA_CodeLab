@@ -2,6 +2,7 @@ package com.CodeLab.DB_Service.service;
 
 import com.CodeLab.DB_Service.model.OTP;
 import com.CodeLab.DB_Service.repository.OTPRepo;
+import com.CodeLab.DB_Service.requestDTO.AdminRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.OTPGenerateRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.UserRequestDTO;
 import com.CodeLab.DB_Service.requestdto_converter.OTPConverter;
@@ -36,7 +37,25 @@ public class OTPService {
         otpRepo.deleteVerifiedOTPs(true);
     }
 
-    public boolean verifyOTP(UserRequestDTO requestDTO,String otpNumber){
+    public boolean verifyUserOTP(UserRequestDTO requestDTO, String otpNumber){
+        String email = requestDTO.getEmail();
+
+
+        OTP otp = otpRepo.findByEmailAndOtpAndIsVerifiedFalse(email,otpNumber).orElse(null);
+
+        if(otp == null){
+            return false;
+        }
+
+        otp.setIsVerified(true);
+        otpRepo.save(otp);
+
+
+
+        return true;
+    }
+
+    public boolean verifyAdminOTP(AdminRequestDTO requestDTO, String otpNumber){
         String email = requestDTO.getEmail();
 
 

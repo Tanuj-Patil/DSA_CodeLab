@@ -1,12 +1,10 @@
 package com.CodeLab.Central_Service.integration;
 
+import com.CodeLab.Central_Service.enums.Difficulty;
 import com.CodeLab.Central_Service.model.Problem;
 import com.CodeLab.Central_Service.model.Submission;
-import com.CodeLab.Central_Service.requestDTO.OTPGenerateRequestDTO;
+import com.CodeLab.Central_Service.requestDTO.*;
 
-import com.CodeLab.Central_Service.requestDTO.ProblemRequestDTO;
-import com.CodeLab.Central_Service.requestDTO.SubmissionRequestDTO;
-import com.CodeLab.Central_Service.requestDTO.UserRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,12 +30,12 @@ public class DBService extends RestAPI{
 
     //User Endpoint calls
 
-    public IsUserAlreadyPresentResponseDTO callIsUserEmailAlreadyExists(String email){
+    public IsEmailAlreadyPresentResponseDTO callIsUserEmailAlreadyExists(String email){
         String endpoint = "/user/is-user-already-present/"+email;
 
         Object response = this.makeGetCall(baseURL,endpoint,new HashMap<>());
 
-        return modelMapper.map(response,IsUserAlreadyPresentResponseDTO.class);
+        return modelMapper.map(response, IsEmailAlreadyPresentResponseDTO.class);
     }
 
     public UserRegisteredResponseDTO callRegisterUser(UserRequestDTO userRequestDTO){
@@ -54,7 +52,7 @@ public class DBService extends RestAPI{
         this.makePostCall(baseURL,endpoint,requestDTO,new HashMap<>());
     }
 
-    public OTPVerificationResponseDTO callVerifyOtp(UserRequestDTO requestDTO,String otp){
+    public OTPVerificationResponseDTO callVerifyUserOtp(UserRequestDTO requestDTO, String otp){
         String endpoint = "/otp/verify";
         HashMap<String,String> map = new HashMap<>();
         map.put("otp",otp);
@@ -64,6 +62,37 @@ public class DBService extends RestAPI{
         return modelMapper.map(response, OTPVerificationResponseDTO.class);
 
     }
+
+    public OTPVerificationResponseDTO callVerifyAdminOtp(AdminRequestDTO requestDTO, String otp){
+        String endpoint = "/otp/verify";
+        HashMap<String,String> map = new HashMap<>();
+        map.put("otp",otp);
+
+        Object response = this.makePutCall(baseURL,endpoint,requestDTO,map);
+
+        return modelMapper.map(response, OTPVerificationResponseDTO.class);
+
+    }
+
+
+    //Admin Endpoints
+
+    public IsEmailAlreadyPresentResponseDTO callIsAdminEmailAlreadyExists(String email){
+        String endpoint = "/admin/is-admin-already-present/"+email;
+
+        Object response = this.makeGetCall(baseURL,endpoint,new HashMap<>());
+
+        return modelMapper.map(response, IsEmailAlreadyPresentResponseDTO.class);
+    }
+
+    public AdminRegisteredResponseDTO callRegisterAdmin(AdminRequestDTO adminRequestDTO){
+        String endpoint = "/admin/register";
+
+        Object response = this.makePostCall(baseURL,endpoint,adminRequestDTO,new HashMap<>());
+
+        return modelMapper.map(response,AdminRegisteredResponseDTO.class);
+    }
+
 
     //Problem endpoint calls
 
@@ -189,6 +218,21 @@ public class DBService extends RestAPI{
         return list;
     }
 
+    public List<Problem> callGetProblemByDifficulty(Difficulty difficulty){
+        String endpoint = "/problem/get-by-difficulty";
+        HashMap<String,String> map = new HashMap<>();
+        map.put("difficulty",difficulty.toString());
+
+        List<Object> response = this.makeGetCallAsList(baseURL,endpoint,map);
+
+        List<Problem> list = new ArrayList<>();
+
+        for(Object obj : response){
+            list.add(modelMapper.map(obj,Problem.class));
+        }
+        return list;
+    }
+
     public GeneralResponseDTO callDeleteById(UUID problemId){
         String endpoint = "/problem/delete/"+problemId;
 
@@ -215,6 +259,46 @@ public class DBService extends RestAPI{
        return   modelMapper.map(response,Submission.class);
 
     }
+
+    public Submission callGetSubmissionById(UUID submissionId){
+        String endpoint = "/submission/get-by-id/"+submissionId;
+
+        Object object = this.makeGetCall(baseURL,endpoint,new HashMap<>());
+        if (object == null){
+            return null;
+        }
+        return modelMapper.map(object,Submission.class);
+    }
+
+    public List<Submission> callGetSubmissionByUserId(UUID userId){
+        String endpoint = "/submission/get-by-user-id/"+userId;
+
+
+        List<Object> response = this.makeGetCallAsList(baseURL,endpoint,new HashMap<>());
+
+        List<Submission> list = new ArrayList<>();
+
+        for(Object obj : response){
+            list.add(modelMapper.map(obj,Submission.class));
+        }
+        return list;
+    }
+
+    public List<Submission> callGetSubmissionByUserIdAndProblemId(UUID userId,UUID problemId){
+        String endpoint = "/submission/get-by-user-id-and-problem-id/"+userId;
+        HashMap<String,String> map = new HashMap<>();
+        map.put("problemId",problemId+"");
+
+        List<Object> response = this.makeGetCallAsList(baseURL,endpoint,map);
+
+        List<Submission> list = new ArrayList<>();
+
+        for(Object obj : response){
+            list.add(modelMapper.map(obj,Submission.class));
+        }
+        return list;
+    }
+
 
 
 }

@@ -19,8 +19,7 @@ public class UserService {
     @Autowired
     private UserRepo userRepo;
 
-   @Autowired
-   private SubmissionService submissionService;
+
 
     public User registerUser(UserRequestDTO userRequestDTO){
         User user = UserConverter.userConverter(userRequestDTO);
@@ -35,20 +34,8 @@ public class UserService {
 
     public User getUserById(UUID id){
         return userRepo.findById(id).orElse(null);
-
     }
 
-    public List<Submission> getSubmissions(UUID userId){
-        return submissionService.getSubmissions(userId);
-    }
-
-    public List<Submission> getSubmissions(UUID userId,UUID problemId){
-        return submissionService.getSubmissions(userId,problemId);
-    }
-
-    public Submission getSubmission(UUID submissionId){
-        return submissionService.getSubmission(submissionId);
-    }
 
     public boolean changePassword(UUID userId,String newPassword){
         User user = userRepo.findById(userId).orElse(null);
@@ -65,10 +52,7 @@ public class UserService {
 
     }
 
-    public void addSubmission(Submission submission,User user){
-//        user.getSubmissionList().add(submission);
-//        userRepo.save(user);
-    }
+
 
 
 }

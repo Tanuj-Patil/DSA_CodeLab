@@ -25,7 +25,12 @@ public class AuthenticationService {
 
     }
 
-    public TokenValidationResponseDTO validateToken(String token){
-        return authService.callValidateToken(token);
+    public TokenValidationResponseDTO validateUserToken(String token){
+        return authService.callValidateUserToken(token);
     }
+
+    public TokenValidationResponseDTO validateAdminToken(String token){
+        return authService.callValidateAdminToken(token);
+    }
+
 }

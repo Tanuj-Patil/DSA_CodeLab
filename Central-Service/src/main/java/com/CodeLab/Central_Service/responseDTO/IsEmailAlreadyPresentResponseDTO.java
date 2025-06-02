@@ -7,9 +7,6 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-
-public class SubmitCodeResponseDTO {
-    private String TC;
-    private String SC;
-
+public class IsEmailAlreadyPresentResponseDTO {
+    private boolean isPresent;
 }

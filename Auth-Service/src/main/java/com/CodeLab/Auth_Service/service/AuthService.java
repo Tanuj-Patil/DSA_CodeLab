@@ -2,6 +2,7 @@ package com.CodeLab.Auth_Service.service;
 
 import com.CodeLab.Auth_Service.integration.DBService;
 import com.CodeLab.Auth_Service.model.Pair;
+import com.CodeLab.Auth_Service.requestDTO.AdminResponse;
 import com.CodeLab.Auth_Service.requestDTO.UserResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -12,7 +13,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -56,7 +56,7 @@ public class AuthService {
         }
     }
 
-    public Pair validateToken(String token) {
+    public Pair validateToken(String token, boolean isAdmin) {
         try {
             String credentials = decryptToken(token);
             if (credentials == null) {
@@ -73,26 +73,43 @@ public class AuthService {
             String email = parts[0];
             String password = parts[1];
 
-            UserResponse response = dbService.callGetUserByEmail(email);
-            System.out.println(response.getEmail());
-            System.out.println(response.getUserId());
-            System.out.println(response.getPassword());
-            if (response == null) {
-                log.warn("User not found for email: {}", email);
-                return null;
+            if(isAdmin){
+
+                AdminResponse response = dbService.callGetAdminByEmail(email);
+                System.out.println(response.getEmail());
+                System.out.println(response.getAdminId());
+                System.out.println(response.getPassword());
+                if (response == null) {
+                    log.warn("Admin not found for email: {}", email);
+                    return null;
+                }
+                boolean isPasswordValid = passwordEncoder.matches(password.trim(), response.getPassword());
+                log.info("Password validation result: {}", isPasswordValid);
+
+                return isPasswordValid ? new Pair(credentials,response.getAdminId()) : null;
+
+            }
+            else{
+                UserResponse response = dbService.callGetUserByEmail(email);
+                System.out.println(response.getEmail());
+                System.out.println(response.getUserId());
+                System.out.println(response.getPassword());
+                if (response == null) {
+                    log.warn("User not found for email: {}", email);
+                    return null;
+                }
+                boolean isPasswordValid = passwordEncoder.matches(password.trim(), response.getPassword());
+                log.info("Password validation result: {}", isPasswordValid);
+
+                return isPasswordValid ? new Pair(credentials,response.getUserId()) : null;
             }
 
-            boolean isPasswordValid = passwordEncoder.matches(password.trim(), response.getPassword());
-            log.info("Password validation result: {}", isPasswordValid);
 
-            return isPasswordValid ? new Pair(credentials,response.getUserId()) : null;
+
         } catch (Exception e) {
             log.error("Token validation failed: {}", e.getMessage());
             return null;
         }
     }
-
-
-
 }
 

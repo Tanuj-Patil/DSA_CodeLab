@@ -1,5 +1,6 @@
 package com.CodeLab.Central_Service.contoller;
 
+import com.CodeLab.Central_Service.enums.Difficulty;
 import com.CodeLab.Central_Service.model.Problem;
 import com.CodeLab.Central_Service.requestDTO.ProblemRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.GeneralResponseDTO;
@@ -80,6 +81,18 @@ public class ProblemController {
         return new ResponseEntity<>(ctn,HttpStatus.FOUND);
     }
 
+    @GetMapping("/get-by-difficulty")
+    public ResponseEntity<?> getByDifficulty(@RequestParam Difficulty difficulty){
+        List<Problem> problemList = problemService.getProblemByDifficulty(difficulty);
+
+        if(problemList == null || problemList.isEmpty()){
+            return new ResponseEntity<>(problemList,HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(problemList,HttpStatus.FOUND);
+    }
+
+
+
     @GetMapping("/search")
     public ResponseEntity<?> searchProblem(@RequestParam String keyword){
         List<Problem> problemList =  problemService.searchProblem(keyword);
@@ -88,6 +101,7 @@ public class ProblemController {
         }
         return new ResponseEntity<>(problemList,HttpStatus.FOUND);
     }
+
 
     @DeleteMapping("/delete/{problemId}")
     public ResponseEntity<?> deleteById(@PathVariable UUID problemId){
