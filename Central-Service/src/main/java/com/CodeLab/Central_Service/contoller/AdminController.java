@@ -51,7 +51,7 @@ public class AdminController {
         return ResponseEntity.ok(responseDTO);
     }
 
-    @PostMapping("/vaildate-token")
+    @PostMapping("/validate-token")
     private ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization",required = false) String header){
         TokenValidationResponseDTO responseDTO = authenticationService.validateAdminToken(header);
         System.out.println(responseDTO.getMessage());

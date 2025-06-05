@@ -149,7 +149,7 @@ public class DBService extends RestAPI{
 
 
     public List<Problem> callGetProblemsTopicWise(String topicName){
-        String endpoint = "/problem/getbytopic";
+        String endpoint = "/problem/get-by-topic";
         HashMap<String,String> map = new HashMap<>();
         map.put("topicName",topicName);
 
@@ -165,7 +165,7 @@ public class DBService extends RestAPI{
 
 
     public List<Problem> callGetProblemsCompanyWise(String companyName){
-        String endpoint = "/problem/getbycompany";
+        String endpoint = "/problem/get-by-company";
         HashMap<String,String> map = new HashMap<>();
         map.put("companyName",companyName);
 
@@ -181,7 +181,7 @@ public class DBService extends RestAPI{
 
 
     public long callGetProblemsCountTopicWise(String topicName){
-        String endpoint = "/problem/getcountbytopic";
+        String endpoint = "/problem/get-count-by-topic";
         HashMap<String,String> map = new HashMap<>();
         map.put("topicName",topicName);
 
@@ -193,7 +193,7 @@ public class DBService extends RestAPI{
 
 
     public long callGetProblemsCountCompanyWise(String companyName){
-        String endpoint = "/problem/getcountbycompany";
+        String endpoint = "/problem/get-count-by-company";
         HashMap<String,String> map = new HashMap<>();
         map.put("companyName",companyName);
 
@@ -290,6 +290,40 @@ public class DBService extends RestAPI{
         map.put("problemId",problemId+"");
 
         List<Object> response = this.makeGetCallAsList(baseURL,endpoint,map);
+
+        List<Submission> list = new ArrayList<>();
+
+        for(Object obj : response){
+            list.add(modelMapper.map(obj,Submission.class));
+        }
+        return list;
+    }
+
+    public Submission callGetLatestSubmissionOfUser(UUID userId){
+        String endpoint = "/submission/get-latest-of-user/"+userId;
+
+        Object object = this.makeGetCall(baseURL,endpoint,new HashMap<>());
+        if (object == null){
+            return null;
+        }
+        return modelMapper.map(object,Submission.class);
+    }
+
+    public List<Submission> callGetSubmissionsByProblemId(UUID problemId){
+        String endpoint = "/submission/get-by-problem-id/"+problemId;
+        List<Object> response = this.makeGetCallAsList(baseURL,endpoint,new HashMap<>());
+
+        List<Submission> list = new ArrayList<>();
+
+        for(Object obj : response){
+            list.add(modelMapper.map(obj,Submission.class));
+        }
+        return list;
+    }
+
+    public List<Submission> callGetAllSubmissions(){
+        String endpoint = "/submission/get-all";
+        List<Object> response = this.makeGetCallAsList(baseURL,endpoint,new HashMap<>());
 
         List<Submission> list = new ArrayList<>();
 

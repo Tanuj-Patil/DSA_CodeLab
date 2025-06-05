@@ -22,4 +22,6 @@ public class UpdateSubmissionRequestDTO {
     private  String lastInput;
     private String lastOutput;
     private String LastExpectedOutput;
+    private int totalTestCases;
+    private int totalPassedTestCases;
 }

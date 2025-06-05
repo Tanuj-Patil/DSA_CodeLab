@@ -2,7 +2,6 @@ package com.CodeLab.Central_Service.service;
 
 import com.CodeLab.Central_Service.exception.UserEmailAlreadyPresentException;
 import com.CodeLab.Central_Service.integration.DBService;
-import com.CodeLab.Central_Service.integration.NotificationService;
 import com.CodeLab.Central_Service.integration.RabbitMQIntegration;
 import com.CodeLab.Central_Service.requestDTO.OTPGenerateRequestDTO;
 import com.CodeLab.Central_Service.requestDTO.UserRequestDTO;

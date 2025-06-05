@@ -144,6 +144,8 @@ public class CodeExecutionService {
 
         String versionIndex = getVersionIndex(language);
         String finalLang = normalizeLanguage(language);
+        String invisibleCode = requestDTO.getInvisibleCode();
+        String visibleCode = requestDTO.getVisibleCode();
 
         ExecutorService executor = Executors.newFixedThreadPool(Math.min(testCases.size(), 5));
         List<CompletableFuture<Optional<CentralServiceRunCodeResponse>>> futures = new ArrayList<>();
@@ -154,7 +156,8 @@ public class CodeExecutionService {
         for (TestCase testCase : testCases) {
             CompletableFuture<Optional<CentralServiceRunCodeResponse>> future = CompletableFuture.supplyAsync(() -> {
                 RunCodeRequestDTO runCodeRequestDTO = new RunCodeRequestDTO();
-                runCodeRequestDTO.setCode(baseCode);
+                runCodeRequestDTO.setVisibleCode(visibleCode);
+                runCodeRequestDTO.setInvisibleCode(invisibleCode);
                 runCodeRequestDTO.setLanguage(finalLang);
                 runCodeRequestDTO.setVersionIndex(versionIndex);
                 runCodeRequestDTO.setInput(testCase.getTestCaseInput());
@@ -289,21 +292,13 @@ public class CodeExecutionService {
     }
 
     public RunCodeRequestDTO convertToRunCodeRequest(CodeRequestDTO requestDTO) {
-        String finalCode = requestDTO.getInvisibleCode() + requestDTO.getVisibleCode();
+        String invisibleCode = requestDTO.getInvisibleCode();
+        String visibleCode = requestDTO.getVisibleCode();
         String language = requestDTO.getLanguage().toString();
 
         RunCodeRequestDTO runCodeRequestDTO = new RunCodeRequestDTO();
-        runCodeRequestDTO.setCode(finalCode);
-        runCodeRequestDTO.setLanguage(normalizeLanguage(language));
-        runCodeRequestDTO.setVersionIndex(getVersionIndex(language));
-        return runCodeRequestDTO;
-    }
-
-    public RunCodeRequestDTO converter(CodeRequestDTO requestDTO) {
-        RunCodeRequestDTO runCodeRequestDTO = new RunCodeRequestDTO();
-        String finalCode = requestDTO.getInvisibleCode() + requestDTO.getVisibleCode();
-        String language = requestDTO.getLanguage().toString();
-        runCodeRequestDTO.setCode(finalCode);
+        runCodeRequestDTO.setInvisibleCode(invisibleCode);
+        runCodeRequestDTO.setVisibleCode(visibleCode);
         runCodeRequestDTO.setLanguage(normalizeLanguage(language));
         runCodeRequestDTO.setVersionIndex(getVersionIndex(language));
         return runCodeRequestDTO;

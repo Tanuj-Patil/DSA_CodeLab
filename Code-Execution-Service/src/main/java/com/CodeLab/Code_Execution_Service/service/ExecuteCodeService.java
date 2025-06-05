@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -25,8 +26,15 @@ public class ExecuteCodeService {
 
     public RunCodeResponseDTO runCode(RunCodeRequestDTO requestDTO) {
         JDoodleRequest request = new JDoodleRequest();
-        request.setScript(requestDTO.getCode());
-        request.setLanguage(requestDTO.getLanguage());
+
+        Set<String> visibleFirstLanguages = Set.of("python3", "nodejs");
+        String language = requestDTO.getLanguage().toString();
+        String baseCode = visibleFirstLanguages.contains(language)
+                ? requestDTO.getVisibleCode() + "\n" + requestDTO.getInvisibleCode()
+                : requestDTO.getInvisibleCode() + "\n" + requestDTO.getVisibleCode();
+
+        request.setScript(baseCode);
+        request.setLanguage(language);
         request.setVersionIndex(requestDTO.getVersionIndex());
         request.setStdin(requestDTO.getInput());
 
@@ -126,8 +134,15 @@ public class ExecuteCodeService {
     @Async("jdoodleExecutor")
     public CompletableFuture<RunCodeResponseDTO> executeAsync(RunCodeRequestDTO requestDTO) {
         JDoodleRequest request = new JDoodleRequest();
-        request.setScript(requestDTO.getCode());
-        request.setLanguage(requestDTO.getLanguage());
+        Set<String> visibleFirstLanguages = Set.of("python3", "nodejs");
+        String language = requestDTO.getLanguage().toString();
+        String baseCode = visibleFirstLanguages.contains(language)
+                ? requestDTO.getVisibleCode() + "\n" + requestDTO.getInvisibleCode()
+                : requestDTO.getInvisibleCode() + "\n" + requestDTO.getVisibleCode();
+
+
+        request.setScript(baseCode);
+        request.setLanguage(language);
         request.setVersionIndex(requestDTO.getVersionIndex());
         request.setStdin(requestDTO.getInput());
 

@@ -9,8 +9,6 @@ import com.CodeLab.DB_Service.responseDTO.GeneralResponseDTO;
 import com.CodeLab.DB_Service.responseDTO.ProblemAddedResponseDTO;
 import com.CodeLab.DB_Service.service.ProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,22 +52,22 @@ public class ProblemController {
         return problemService.getProblem(problemId);
     }
 
-    @GetMapping("/getbytopic")
+    @GetMapping("/get-by-topic")
     public List<Problem> getProblemsTopicWise(@RequestParam String topicName){
         return problemService.getProblemsTopicWise(topicName);
     }
 
-    @GetMapping("/getbycompany")
+    @GetMapping("/get-by-company")
     public List<Problem> getProblemsCompanyWise(@RequestParam String companyName){
         return problemService.getProblemsCompanyWise(companyName);
     }
 
-    @GetMapping("/getcountbytopic")
+    @GetMapping("/get-count-by-topic")
     public long getProblemsCountTopicWise(@RequestParam String topicName){
         return problemService.getProblemsCountTopicWise(topicName);
     }
 
-    @GetMapping("/getcountbycompany")
+    @GetMapping("/get-count-by-company")
     public long getProblemsCountCompanyWise(@RequestParam String companyName){
         return problemService.getProblemsCountCompanyWise(companyName);
     }
@@ -108,7 +106,7 @@ public class ProblemController {
         }
     }
 
-    @PostMapping("/all-tescases/{problemId}")
+    @PostMapping("/all-testcases/{problemId}")
     public GeneralResponseDTO addTestCaseList(@RequestBody List<TestCaseRequestDTO> testCaseRequestDTOList,@PathVariable UUID problemId){
         GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
 

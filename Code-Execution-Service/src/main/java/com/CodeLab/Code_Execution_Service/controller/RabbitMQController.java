@@ -35,6 +35,7 @@ public class RabbitMQController {
 
     @RabbitListener(queues = "codelab-code-execution-queue")
     public void consumeMessage(@Payload List<RunCodeRequestDTO> requestList) {
+        int totalTestcasesPassed = 0;
         try {
             long totalStart = System.nanoTime();
             RunCodeRequestDTO firstRequest = requestList.get(0);
@@ -54,6 +55,7 @@ public class RabbitMQController {
             double execTimeInSec = (execEnd - execStart) / 1_000_000_000.0;
 
             // Step 2: Check for errors or wrong answers
+
             for (int i = 0; i < results.size(); i++) {
                 RunCodeResponseDTO result = results.get(i);
                 RunCodeRequestDTO request = requestList.get(i);
@@ -65,10 +67,10 @@ public class RabbitMQController {
                                 SubmissionStatus.RUNTIME_ERROR,
                                 null, null,
                                 result.getRuntimeError(),
-                                request.getCode(),
+                                request.getVisibleCode(),
                                 request.getInput(),
                                 result.getOutput(),
-                                request.getExpectedOutput()
+                                request.getExpectedOutput(),requestList.size(), totalTestcasesPassed
                         ));
                         System.out.println("Runtime Error:\n" + result.getRuntimeError());
                     } else {
@@ -77,10 +79,10 @@ public class RabbitMQController {
                                 SubmissionStatus.COMPILE_ERROR,
                                 null, null,
                                 result.getOutput(),
-                                request.getCode(),
+                                request.getVisibleCode(),
                                 null,
                                 null,
-                                null
+                                null,requestList.size(), totalTestcasesPassed
                         ));
                         System.out.println("Compile Error:\n" + result.getOutput());
                     }
@@ -97,10 +99,10 @@ public class RabbitMQController {
                             SubmissionStatus.WRONG_ANSWER,
                             null, null,
                             null,
-                            request.getCode(),
+                            request.getVisibleCode(),
                             request.getInput(),
                             result.getOutput(),
-                            request.getExpectedOutput()
+                            request.getExpectedOutput(),requestList.size(), totalTestcasesPassed
                     ));
                     System.out.println("Wrong Answer:\n" + wrong);
                     return;
@@ -110,6 +112,7 @@ public class RabbitMQController {
                 System.out.println("Output: " + result.getOutput());
                 System.out.println("CPU Time: " + result.getCpuTime());
                 System.out.println("-------------------------");
+                totalTestcasesPassed++;
             }
 
             System.out.printf("Executed %d test cases in %.3f seconds%n", results.size(), execTimeInSec);
@@ -117,7 +120,7 @@ public class RabbitMQController {
             // Step 3: Run Gemini complexity analysis
             long analysisStart = System.nanoTime();
             CompletableFuture<Map<String, String>> analysisFuture =
-                    CompletableFuture.supplyAsync(() -> geminiService.analyzeCodeComplexity(firstRequest.getCode()));
+                    CompletableFuture.supplyAsync(() -> geminiService.analyzeCodeComplexity(firstRequest.getVisibleCode()));
             Map<String, String> map = analysisFuture.join();
             long analysisEnd = System.nanoTime();
             double analysisTimeInSec = (analysisEnd - analysisStart) / 1_000_000_000.0;
@@ -133,10 +136,10 @@ public class RabbitMQController {
                     map.get("TC"),
                     map.get("SC"),
                     null,
-                    firstRequest.getCode(),
+                    firstRequest.getVisibleCode(),
                     null,
                     null,
-                    null
+                    null,requestList.size(),requestList.size()
             ));
 
             long totalEnd = System.nanoTime();
@@ -149,8 +152,8 @@ public class RabbitMQController {
                     SubmissionStatus.INTERNAL_ERROR,
                     null, null,
                     "Error during execution: " + e.getMessage(),
-                    requestList.get(0).getCode(),
-                    null, null, null
+                    requestList.get(0).getVisibleCode(),
+                    null, null, null,requestList.size(),totalTestcasesPassed
             ));
             System.err.println("Error during execution: " + e.getMessage());
         }

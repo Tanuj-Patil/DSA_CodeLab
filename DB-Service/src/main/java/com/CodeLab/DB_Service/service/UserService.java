@@ -33,8 +33,11 @@ public class UserService {
     }
 
     public User getUserById(UUID id){
+
         return userRepo.findById(id).orElse(null);
     }
+
+
 
 
     public boolean changePassword(UUID userId,String newPassword){

@@ -5,6 +5,8 @@ import com.CodeLab.Central_Service.model.Problem;
 import com.CodeLab.Central_Service.requestDTO.ProblemRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.GeneralResponseDTO;
 import com.CodeLab.Central_Service.responseDTO.ProblemAddedResponseDTO;
+import com.CodeLab.Central_Service.responseDTO.TokenValidationResponseDTO;
+import com.CodeLab.Central_Service.service.AuthenticationService;
 import com.CodeLab.Central_Service.service.ProblemService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,8 +22,17 @@ public class ProblemController {
     @Autowired
     ProblemService problemService;
 
+    @Autowired
+    AuthenticationService authenticationService;
+
     @PostMapping("/add")
-    public ResponseEntity<?> addProblem(@RequestBody ProblemRequestDTO problemRequestDTO){
+    public ResponseEntity<?> addProblem(@RequestBody ProblemRequestDTO problemRequestDTO,@RequestHeader(value = "Authorization", required = false) String header){
+        TokenValidationResponseDTO tokenValidationResponseDTO = authenticationService.validateAdminToken(header);
+        System.out.println(tokenValidationResponseDTO.getMessage());
+
+        if (!tokenValidationResponseDTO.isValid()) {
+            return new ResponseEntity<>(tokenValidationResponseDTO, HttpStatus.UNAUTHORIZED);
+        }
         ProblemAddedResponseDTO responseDTO = problemService.addProblem(problemRequestDTO);
 
         if(responseDTO.getProblem() != null){
@@ -104,15 +115,28 @@ public class ProblemController {
 
 
     @DeleteMapping("/delete/{problemId}")
-    public ResponseEntity<?> deleteById(@PathVariable UUID problemId){
-        GeneralResponseDTO responseDTO = problemService.deleteById(problemId);
-        return new ResponseEntity<>(responseDTO,HttpStatus.OK);
+    public ResponseEntity<?> deleteById(@PathVariable UUID problemId, @RequestHeader(value = "Authorization", required = false) String header){
+        TokenValidationResponseDTO responseDTO = authenticationService.validateAdminToken(header);
+        System.out.println(responseDTO.getMessage());
+
+        if (!responseDTO.isValid()) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.UNAUTHORIZED);
+        }
+        GeneralResponseDTO generalResponseDTO = problemService.deleteById(problemId);
+        return new ResponseEntity<>(generalResponseDTO,HttpStatus.OK);
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteAll(){
-        GeneralResponseDTO responseDTO = problemService.deleteAll();
-        return new ResponseEntity<>(responseDTO,HttpStatus.OK);
+    public ResponseEntity<?> deleteAll(@RequestHeader(value = "Authorization", required = false) String header){
+        TokenValidationResponseDTO responseDTO = authenticationService.validateAdminToken(header);
+        System.out.println(responseDTO.getMessage());
+
+        if (!responseDTO.isValid()) {
+            return new ResponseEntity<>(responseDTO, HttpStatus.UNAUTHORIZED);
+        }
+
+        GeneralResponseDTO generalResponseDTO = problemService.deleteAll();
+        return new ResponseEntity<>(generalResponseDTO,HttpStatus.OK);
     }
 
 }

@@ -27,6 +27,8 @@ public class SubmissionConverter {
         submission.setLastInput(null);
         submission.setLastOutput(null);
         submission.setLastExpectedOutput(null);
+        submission.setTotalTestCases(0);
+        submission.setTotalPassedTestCases(0);
 
         return submission;
     }

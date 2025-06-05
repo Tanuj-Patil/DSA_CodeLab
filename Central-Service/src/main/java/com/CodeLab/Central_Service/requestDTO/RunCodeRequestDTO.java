@@ -11,14 +11,16 @@ import java.util.UUID;
 @ToString
 
 public class RunCodeRequestDTO {
-    private String code;
+    private String invisibleCode;
+    private String visibleCode;
     private String language;
     private String versionIndex;
     private String input;
     private String expectedOutput;
     private UUID submissionId;
     public RunCodeRequestDTO(RunCodeRequestDTO other) {
-        this.code = other.code;
+        this.visibleCode = other.getVisibleCode();
+        this.invisibleCode = other.getInvisibleCode();
         this.language = other.language;
         this.versionIndex = other.versionIndex;
         this.submissionId = other.submissionId;

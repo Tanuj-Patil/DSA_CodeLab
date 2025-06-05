@@ -16,11 +16,23 @@ public class SubmissionService {
         return dbService.callGetSubmissionById(submissionId);
     }
 
-    public List<Submission> getSubmissionByUserId(UUID userId){
+    public List<Submission> getSubmissionsByUserId(UUID userId){
         return dbService.callGetSubmissionByUserId(userId);
     }
 
-    public List<Submission> getSubmissionByUserIdAndProblem(UUID userId,UUID problemId){
+    public List<Submission> getSubmissionsByUserIdAndProblemId(UUID userId, UUID problemId){
         return dbService.callGetSubmissionByUserIdAndProblemId(userId,problemId);
+    }
+
+    public Submission getLatestSubmissionByUserId(UUID userId){
+        return dbService.callGetLatestSubmissionOfUser(userId);
+    }
+
+    public List<Submission> getSubmissionsByProblemId(UUID problemId){
+        return dbService.callGetSubmissionsByProblemId(problemId);
+    }
+
+    public List<Submission> getAllSubmissions(){
+        return dbService.callGetAllSubmissions();
     }
 }

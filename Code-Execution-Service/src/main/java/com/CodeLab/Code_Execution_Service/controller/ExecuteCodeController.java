@@ -27,9 +27,5 @@ public class ExecuteCodeController {
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
-    @PostMapping("/submit")
-    public ResponseEntity<?> submitCode(@RequestBody RunCodeRequestDTO requestDTO){
-            SubmitCodeResponseDTO responseDTO = codeService.getTimeAndSpaceComplexities(requestDTO.getCode());
-            return new ResponseEntity<>(responseDTO,HttpStatus.ACCEPTED);
-    }
+
 }

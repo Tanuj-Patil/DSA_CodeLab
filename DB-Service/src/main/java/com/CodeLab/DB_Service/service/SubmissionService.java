@@ -1,6 +1,5 @@
 package com.CodeLab.DB_Service.service;
 
-import com.CodeLab.DB_Service.enums.SubmissionStatus;
 import com.CodeLab.DB_Service.model.Problem;
 import com.CodeLab.DB_Service.model.Submission;
 import com.CodeLab.DB_Service.model.User;
@@ -25,14 +24,6 @@ public class SubmissionService {
         return submission;
     }
 
-    public List<Submission> getSubmissions(UUID userId){
-        return submissionRepo.findAllByUser(userId);
-    }
-
-    public List<Submission> getSubmissions(UUID userId,UUID problemId){
-        return submissionRepo.findAllByUserAndProblem(userId,problemId);
-    }
-
     public Submission getSubmission(UUID submissionId){
 
         return submissionRepo.findById(submissionId).orElse(null);
@@ -48,6 +39,8 @@ public class SubmissionService {
         submission.setLastInput(requestDTO.getLastInput());
         submission.setLastOutput(requestDTO.getLastOutput());
         submission.setLastExpectedOutput(requestDTO.getLastExpectedOutput());
+        submission.setTotalTestCases(requestDTO.getTotalTestCases());
+        submission.setTotalPassedTestCases(requestDTO.getTotalPassedTestCases());
 
         submissionRepo.save(submission);
         return submission;
@@ -58,12 +51,29 @@ public class SubmissionService {
     }
 
     public List<Submission> getSubmissionsByUserId(UUID userId){
-        return submissionRepo.findAllByUser(userId);
+
+        return submissionRepo.findAllByUserId(userId);
     }
+
+
 
     public List<Submission> getSubmissionsByUserIdAndProblem(UUID userId,UUID problemId){
         return submissionRepo.findAllByUserAndProblem(userId,problemId);
     }
+
+    public Submission getLatestSubmissionByUserId(UUID userId){
+        return submissionRepo.findLatestSubmissionByUserId(userId).orElse(null);
+    }
+
+    public List<Submission> getSubmissionsByProblemId(UUID problemId){
+        return submissionRepo.findAllByProblemId(problemId);
+    }
+
+    public List<Submission> getAllSubmissions(){
+        return submissionRepo.findAll();
+    }
+
+
 
 
 }

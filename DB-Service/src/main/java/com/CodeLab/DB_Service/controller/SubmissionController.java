@@ -1,6 +1,5 @@
 package com.CodeLab.DB_Service.controller;
 
-import com.CodeLab.DB_Service.enums.SubmissionStatus;
 import com.CodeLab.DB_Service.model.Problem;
 import com.CodeLab.DB_Service.model.Submission;
 import com.CodeLab.DB_Service.model.User;
@@ -55,8 +54,25 @@ public class SubmissionController {
     }
 
     @GetMapping("/get-by-user-id-and-problem-id/{userId}")
-    public List<Submission> getSubmissionsByUserId(@PathVariable UUID userId,@RequestParam UUID problemId){
+    public List<Submission> getSubmissionsByUserIdAndProblemId(@PathVariable UUID userId,@RequestParam UUID problemId){
         return submissionService.getSubmissionsByUserIdAndProblem(userId,problemId);
     }
+
+
+    @GetMapping("/get-latest-of-user/{userId}")
+    public Submission getLatestSubmissionByUserId(@PathVariable UUID userId){
+        return submissionService.getLatestSubmissionByUserId(userId);
+    }
+
+    @GetMapping("/get-by-problem-id/{problemId}")
+    public List<Submission> getSubmissionsByProblemId(@PathVariable UUID problemId){
+        return submissionService.getSubmissionsByProblemId(problemId);
+    }
+
+    @GetMapping("/get-all")
+    public List<Submission> getAllSubmissions(){
+        return submissionService.getAllSubmissions();
+    }
+
 
 }

@@ -36,13 +36,17 @@ public class Submission {
 
     private Problem problem;
 
-    private  String lastInput;
+    private String lastInput;
 
     private String lastOutput;
 
     private String lastExpectedOutput;
 
     private String code;
+
+    private int totalTestCases;
+
+    private int totalPassedTestCases;
 
 }
 

@@ -69,4 +69,13 @@ public class Submission {
     @Column(name = "last_testcase_expected_output",columnDefinition = "TEXT")
     private String lastExpectedOutput;
 
+
+    @Column(name = "total_testcases")
+    private int totalTestCases;
+
+    @Column(name = "total_passed_testcases")
+    private int totalPassedTestCases;
+
+
+
 }
