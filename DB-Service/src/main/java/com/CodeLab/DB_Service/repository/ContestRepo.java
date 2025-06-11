@@ -32,4 +32,22 @@ public interface ContestRepo extends JpaRepository<Contest,UUID> {
     )
     Page<Contest> findAllLiveContestsPaginated(@Param("now") LocalDateTime now, Pageable pageable);
 
+    @Query(value = """
+    SELECT * FROM contests c
+    WHERE c.end_time < :now
+    AND NOT EXISTS (
+        SELECT 1 FROM leaderboard_entry l
+        WHERE l.contest_id = c.contest_id
+    )
+    """, nativeQuery = true)
+    List<Contest> findAllEndedContestsWithoutLeaderboard(@Param("now") LocalDateTime now);
+
+    @Query(value = "SELECT * FROM contests WHERE end_time < :now ORDER BY end_time DESC", nativeQuery = true)
+    List<Contest> findAllPastContests(@Param("now") LocalDateTime now);
+
+    @Query(value = "SELECT * FROM contests WHERE end_time < :now ORDER BY end_time DESC",
+            countQuery = "SELECT COUNT(*) FROM contests WHERE end_time < :now",
+            nativeQuery = true)
+    Page<Contest> findAllPastContests(@Param("now") LocalDateTime now, Pageable pageable);
+
 }

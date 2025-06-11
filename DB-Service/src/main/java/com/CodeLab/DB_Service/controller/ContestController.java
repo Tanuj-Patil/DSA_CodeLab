@@ -105,8 +105,22 @@ public class ContestController {
     }
 
 
-    public void getPastContests(){
-
+    @GetMapping("/get-past-contests")
+    public List<PastContestResponseListDTO> getPastContests(@RequestParam UUID userId){
+        return contestService.getPastContests(userId);
     }
+
+    @GetMapping("/get-past-contests/{pageNo}")
+    public List<PastContestResponseListDTO> getPastContestsByPage(@PathVariable int pageNo, @RequestParam UUID userId){
+        return contestService.getPastContestsByPage(userId,pageNo);
+    }
+
+    @GetMapping("/get-past-contest-detail/{contestId}")
+    public PastContestResponseDTO getPastContestDetails(@RequestParam UUID userId,@PathVariable UUID contestId){
+        return contestService.getPastContestDetails(userId,contestId);
+    }
+
+    //contest problem number
+    //problem response dto
 
 }

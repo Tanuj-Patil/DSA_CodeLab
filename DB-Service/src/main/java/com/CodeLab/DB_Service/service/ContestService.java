@@ -9,23 +9,20 @@ import com.CodeLab.DB_Service.requestDTO.ProblemRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.UpdatePartialContestSubmissionRequestDTO;
 import com.CodeLab.DB_Service.requestdto_converter.ContestConverter;
 import com.CodeLab.DB_Service.requestdto_converter.PartialContestSubmissionConverter;
-import com.CodeLab.DB_Service.responseDTO.ContestAddedResponseDTO;
-import com.CodeLab.DB_Service.responseDTO.ContestStartResponseDTO;
-import com.CodeLab.DB_Service.responseDTO.LiveContestResponseDTO;
-import com.CodeLab.DB_Service.responseDTO.UpcomingContestResponseDTO;
+import com.CodeLab.DB_Service.responseDTO.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ContestService {
@@ -50,6 +47,9 @@ public class ContestService {
 
     @Autowired
     PartialContestSubmissionRepo partialContestSubmissionRepo;
+
+    @Autowired
+    LeaderboardEntryRepo leaderboardEntryRepo;
 
     public ContestAddedResponseDTO addContest(ContestRequestDTO requestDTO){
         Contest contest = ContestConverter.contestConverter(requestDTO);
@@ -426,4 +426,176 @@ public class ContestService {
 
         return submissionRepo.save(submission);
     }
+
+    public void generateLeaderboard(UUID contestId) {
+        // 1. Fetch contest
+        Contest contest = contestRepo.findById(contestId)
+                .orElseThrow(() -> new NotFoundException("Contest not found"));
+
+        // 2. Check if leaderboard already exists
+        if (!leaderboardEntryRepo.findByContestIdNative(contestId).isEmpty()) {
+            throw new RuntimeException("Leaderboard already generated for this contest.");
+        }
+
+        // 3. Get all registered users
+        List<ContestUser> registeredUsers = contestUserRepo.findAllByContestId(contestId);
+
+        // 4. Get all submissions
+        List<FullContestSubmission> allSubmissions = submissionRepo.findAllByContestId(contestId);
+
+        // 5. Map userId -> submission
+        Map<UUID, FullContestSubmission> submissionMap = allSubmissions.stream()
+                .collect(Collectors.toMap(
+                        s -> s.getUser().getUserId(),
+                        s -> s
+                ));
+
+        // 6. Prepare leaderboard entries
+        List<LeaderboardEntry> entries = new ArrayList<>();
+
+        for (ContestUser cu : registeredUsers) {
+            User user = cu.getUser();
+            FullContestSubmission submission = submissionMap.get(user.getUserId());
+
+            LeaderboardEntry entry = new LeaderboardEntry();
+            entry.setContest(contest);
+            entry.setUser(user);
+
+            if (submission != null && submission.getUserSubmittedAt() != null) {
+                entry.setPercentage(submission.getPercentage());
+                entry.setTotalTimeTaken(submission.getTotalTimeTaken());
+            } else {
+                entry.setPercentage(0.0);
+                entry.setTotalTimeTaken(contest.getDuration()); // Max duration if not submitted
+            }
+
+            entries.add(entry);
+        }
+
+        // 7. Sort with 3-level comparator: percentage ↓, time ↑, startedAt ↑
+        entries.sort(Comparator
+                .comparingDouble(LeaderboardEntry::getPercentage).reversed()
+                .thenComparingLong(LeaderboardEntry::getTotalTimeTaken)
+                .thenComparing(entry -> {
+                    UUID userId = entry.getUser().getUserId();
+                    FullContestSubmission submission = submissionMap.get(userId);
+                    return (submission != null && submission.getUserStartedAt() != null)
+                            ? submission.getUserStartedAt()
+                            : LocalDateTime.MAX; // treat non-starters as very late
+                }));
+
+        // 8. Assign T- style ranks
+        int currentRank = 1;
+        int visibleRank = 1;
+        LeaderboardEntry prev = null;
+
+        for (LeaderboardEntry entry : entries) {
+            if (prev != null &&
+                    Double.compare(entry.getPercentage(), prev.getPercentage()) == 0 &&
+                    entry.getTotalTimeTaken() == prev.getTotalTimeTaken()) {
+
+                UUID userId = entry.getUser().getUserId();
+                UUID prevUserId = prev.getUser().getUserId();
+
+                LocalDateTime startA = submissionMap.containsKey(userId) && submissionMap.get(userId).getUserStartedAt() != null
+                        ? submissionMap.get(userId).getUserStartedAt() : LocalDateTime.MAX;
+
+                LocalDateTime startB = submissionMap.containsKey(prevUserId) && submissionMap.get(prevUserId).getUserStartedAt() != null
+                        ? submissionMap.get(prevUserId).getUserStartedAt() : LocalDateTime.MAX;
+
+                if (startA.equals(startB)) {
+                    entry.setRank(prev.getRank()); // tie
+                } else {
+                    entry.setRank(visibleRank);
+                }
+            } else {
+                entry.setRank(visibleRank);
+            }
+
+            prev = entry;
+            currentRank++;
+            visibleRank = currentRank;
+        }
+
+        // 9. Save to DB
+        leaderboardEntryRepo.saveAll(entries);
+    }
+
+    public List<PastContestResponseListDTO> getPastContests(UUID userId) {
+        List<Contest> pastContests = contestRepo.findAllPastContests(LocalDateTime.now());
+        return buildPastContestDTOs(pastContests, userId);
+    }
+
+    public List<PastContestResponseListDTO> getPastContestsByPage(UUID userId, int pageNo) {
+        Pageable pageable = PageRequest.of(pageNo-1, 10); // page size 10
+        Page<Contest> page = contestRepo.findAllPastContests(LocalDateTime.now(), pageable);
+        return buildPastContestDTOs(page.getContent(), userId);
+    }
+
+    private List<PastContestResponseListDTO> buildPastContestDTOs(List<Contest> contests, UUID userId) {
+        List<PastContestResponseListDTO> responseList = new ArrayList<>();
+
+        for (Contest contest : contests) {
+            boolean participated = contestUserRepo.findByUserAndContest(userId, contest.getContestId()).isPresent();
+
+
+            PastContestResponseListDTO dto = new PastContestResponseListDTO();
+            dto.setContest(contest);
+            dto.setUserParticipated(participated);
+
+            responseList.add(dto);
+        }
+
+        return responseList;
+    }
+
+    public PastContestResponseDTO getPastContestDetails(UUID userId, UUID contestId) {
+        User user = userService.getUserById(userId);
+
+        Contest contest = contestRepo.findById(contestId)
+                .orElseThrow(() -> new NotFoundException("Contest with id-" + contestId + " not Found!!!"));
+
+        if (LocalDateTime.now().isBefore(contest.getEndTime())) {
+            throw new IllegalStateException("Contest has not ended yet.");
+        }
+
+        List<LeaderboardEntry> leaderboardEntries = leaderboardEntryRepo.findByContestIdNative(contestId);
+
+        List<LeaderboardEntryResponseDTO> leaderboard = new ArrayList<>();
+        boolean isUserParticipated = false;
+        Integer userRank = null;
+
+        for (LeaderboardEntry entry : leaderboardEntries) {
+            if (entry.getUser().getUserId().equals(userId)) {
+                isUserParticipated = true;
+                userRank = entry.getRank();
+            }
+
+            leaderboard.add(new LeaderboardEntryResponseDTO(
+                    entry.getRank(),
+                    entry.getUser().getName(),
+                    entry.getPercentage(),
+                    entry.getTotalTimeTaken()
+            ));
+        }
+
+        List<ContestProblem> contestProblemList = contestProblemRepo.findByContestIdNative(contestId);
+        List<Problem> problemList = new ArrayList<>();
+
+        for(ContestProblem cp : contestProblemList){
+            Problem problem = cp.getProblem();
+            problemList.add(problem);
+        }
+
+        return new PastContestResponseDTO(
+                contest,
+                isUserParticipated,
+                userRank,
+                leaderboard,
+                problemList,
+                leaderboardEntries.size()
+        );
+    }
+
+
 }

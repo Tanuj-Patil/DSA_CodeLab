@@ -55,4 +55,16 @@ public class ContestService {
         return dbService.callSubmitContest(userId,contestId);
     }
 
+    public List<PastContestResponseListDTO> getPastContests(UUID userId){
+        return dbService.callGetPastContests(userId);
+    }
+
+    public List<PastContestResponseListDTO> getPastContestsByPage(int pageNo, UUID userId){
+        return dbService.callGetPastContestsByPage(pageNo,userId);
+    }
+
+    public PastContestResponseDTO getPastContestDetails(UUID userId,UUID contestId){
+        return dbService.callGetPastContestDetails(userId,contestId);
+    }
+
 }

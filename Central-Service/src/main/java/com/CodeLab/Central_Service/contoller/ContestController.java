@@ -3,7 +3,6 @@ package com.CodeLab.Central_Service.contoller;
 import com.CodeLab.Central_Service.model.FullContestSubmission;
 import com.CodeLab.Central_Service.model.PartialContestSubmission;
 import com.CodeLab.Central_Service.model.Problem;
-import com.CodeLab.Central_Service.model.Submission;
 import com.CodeLab.Central_Service.requestDTO.CodeRequestDTO;
 import com.CodeLab.Central_Service.requestDTO.ContestRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.*;
@@ -67,6 +66,12 @@ public class ContestController {
             return new ResponseEntity<>(authResponseDTO, HttpStatus.UNAUTHORIZED);
         }
 
+        if(pageNo <= 0){
+            GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
+            generalResponseDTO.setMessage("Invalid Page No."+pageNo);
+            return new ResponseEntity<>(generalResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+
         UUID userId = authResponseDTO.getUserId();
 
         List<UpcomingContestResponseDTO> responseDTO =  contestService.getUpcomingContestsByPage(pageNo,userId);
@@ -114,6 +119,11 @@ public class ContestController {
             return new ResponseEntity<>(authResponseDTO, HttpStatus.UNAUTHORIZED);
         }
 
+        if(pageNo <= 0){
+            GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
+            generalResponseDTO.setMessage("Invalid Page No."+pageNo);
+            return new ResponseEntity<>(generalResponseDTO, HttpStatus.BAD_REQUEST);
+        }
         UUID userId = authResponseDTO.getUserId();
 
         List<LiveContestResponseDTO> responseDTO =  contestService.getLiveContestsByPage(pageNo,userId);
@@ -177,6 +187,58 @@ public class ContestController {
 
         FullContestSubmission responseDTO = contestService.submitContest(userId,contestId);
 
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/get-past-contests")
+    public ResponseEntity<?> getPastContests(@RequestHeader(value = "Authorization", required = false) String header){
+        TokenValidationResponseDTO authResponseDTO = authenticationService.validateUserToken(header);
+        System.out.println(authResponseDTO.getMessage());
+
+        if (!authResponseDTO.isValid()) {
+            return new ResponseEntity<>(authResponseDTO, HttpStatus.UNAUTHORIZED);
+        }
+
+        UUID userId = authResponseDTO.getUserId();
+
+        List<PastContestResponseListDTO> responseDTO =  contestService.getPastContests(userId);
+        return new ResponseEntity<>(responseDTO,HttpStatus.OK);
+    }
+
+    @GetMapping("/get-past-contests/{pageNo}")
+    public ResponseEntity<?> getPastContests(@PathVariable int pageNo,@RequestHeader(value = "Authorization", required = false) String header){
+        TokenValidationResponseDTO authResponseDTO = authenticationService.validateUserToken(header);
+        System.out.println(authResponseDTO.getMessage());
+
+        if (!authResponseDTO.isValid()) {
+            return new ResponseEntity<>(authResponseDTO, HttpStatus.UNAUTHORIZED);
+        }
+
+        if(pageNo <= 0){
+            GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
+            generalResponseDTO.setMessage("Invalid Page No."+pageNo);
+            return new ResponseEntity<>(generalResponseDTO, HttpStatus.BAD_REQUEST);
+        }
+
+        UUID userId = authResponseDTO.getUserId();
+
+
+        List<PastContestResponseListDTO> responseDTO =  contestService.getPastContestsByPage(pageNo,userId);
+        return new ResponseEntity<>(responseDTO,HttpStatus.OK);
+    }
+
+    @GetMapping("/get-past-contest-detail/{contestId}")
+    public ResponseEntity<?> getPastContestDetails(@PathVariable UUID contestId,@RequestHeader(value = "Authorization", required = false) String header){
+        TokenValidationResponseDTO authResponseDTO = authenticationService.validateUserToken(header);
+        System.out.println(authResponseDTO.getMessage());
+
+        if (!authResponseDTO.isValid()) {
+            return new ResponseEntity<>(authResponseDTO, HttpStatus.UNAUTHORIZED);
+        }
+
+        UUID userId = authResponseDTO.getUserId();
+
+        PastContestResponseDTO responseDTO = contestService.getPastContestDetails(userId,contestId);;
         return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 

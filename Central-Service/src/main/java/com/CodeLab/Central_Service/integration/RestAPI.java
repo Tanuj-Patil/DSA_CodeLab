@@ -83,6 +83,7 @@ public abstract class RestAPI {
     // ✅ Optional: Overload if you still want to support single Object response
     public Object makeGetCall(String baseURL, String endpoint, HashMap<String, String> queryParams) {
         String url = this.addQueryParams(new StringBuilder(baseURL + endpoint), queryParams);
+//        System.out.println(url);
 
         RequestEntity<Void> requestEntity = RequestEntity.get(URI.create(url)).build();
 

@@ -5,10 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface FullContestSubmissionRepo extends JpaRepository<FullContestSubmission, UUID> {
     @Query(value = "SELECT * FROM full_contest_submissions WHERE contest_id = :contestId AND user_id = :userId", nativeQuery = true)
     Optional<FullContestSubmission> findByContestIdAndUserId(@Param("contestId") UUID contestId, @Param("userId") UUID userId);
+
+    @Query(value = "SELECT * FROM full_contest_submissions WHERE contest_id = :contestId", nativeQuery = true)
+    List<FullContestSubmission> findAllByContestId(@Param("contestId") UUID contestId);
+
 }

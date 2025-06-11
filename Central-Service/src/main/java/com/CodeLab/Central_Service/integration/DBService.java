@@ -6,15 +6,11 @@ import com.CodeLab.Central_Service.requestDTO.*;
 
 import com.CodeLab.Central_Service.responseDTO.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 
 
 import java.util.ArrayList;
@@ -459,4 +455,44 @@ public class DBService extends RestAPI{
         return objectMapper.convertValue(response,FullContestSubmission.class);
 
     }
+
+    public List<PastContestResponseListDTO> callGetPastContests(UUID userId) {
+        String endpoint = "/contest/get-past-contests";
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+        List<Object> response = this.makeGetCallAsList(baseURL, endpoint, map);
+
+        List<PastContestResponseListDTO> list = new ArrayList<>();
+        for (Object obj : response) {
+            list.add(objectMapper.convertValue(obj, PastContestResponseListDTO.class));
+        }
+        return list;
+    }
+
+    public List<PastContestResponseListDTO> callGetPastContestsByPage(int pageNo, UUID userId) {
+        String endpoint = "/contest/get-past-contests/"+pageNo;
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+        List<Object> response = this.makeGetCallAsList(baseURL, endpoint, map);
+
+        List<PastContestResponseListDTO> list = new ArrayList<>();
+        for (Object obj : response) {
+            list.add(objectMapper.convertValue(obj, PastContestResponseListDTO.class));
+        }
+        return list;
+    }
+
+    public PastContestResponseDTO callGetPastContestDetails(UUID userId,UUID contestId){
+        String endpoint = "/contest/get-past-contest-detail/"+contestId;
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+
+        Object response = this.makeGetCall(baseURL,endpoint,map);
+
+        return objectMapper.convertValue(response,PastContestResponseDTO.class);
+    }
+
+
 }
