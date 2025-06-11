@@ -8,6 +8,7 @@ import com.CodeLab.DB_Service.requestDTO.SolutionRequestDTO;
 import com.CodeLab.DB_Service.requestDTO.SubmissionRequestDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class SubmissionConverter {
@@ -29,6 +30,7 @@ public class SubmissionConverter {
         submission.setLastExpectedOutput(null);
         submission.setTotalTestCases(0);
         submission.setTotalPassedTestCases(0);
+        submission.setSubmittedAt(LocalDateTime.now());
 
         return submission;
     }

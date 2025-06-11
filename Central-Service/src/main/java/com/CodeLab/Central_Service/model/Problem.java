@@ -52,6 +52,8 @@ public class Problem {
 
     private String note;
 
+    private boolean isVisible;
+
 
     public List<TestCase> getAllVisibleTestCases(){
         List<TestCase> testCases = new ArrayList<>();

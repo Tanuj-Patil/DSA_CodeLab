@@ -1,5 +1,8 @@
 package com.CodeLab.Central_Service.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.modelmapper.ModelMapper;
 import org.springframework.amqp.core.*;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
@@ -18,10 +21,19 @@ public class AppConfig {
     private final String notificationQueueName = "codelab-notification-queue";
     private final String notificationRoutingKey = "codelab-notification-route-123";
 
-    // Code execution exchange and queue setup
+    // Code execution exchange setup (shared)
     private final String codeExecutionExchangeName = "codelab-code-execution-exchange";
+
+    // Old queue (optional, keep if still used)
     private final String codeExecutionQueueName = "codelab-code-execution-queue";
     private final String codeExecutionRoutingKey = "codelab-code-execution-route";
+
+    // New queues and routing keys
+    private final String normalCodeExecutionQueueName = "normal-submission-queue";
+    private final String normalRoutingKey = "normal-code-execution-route";
+
+    private final String contestCodeExecutionQueueName = "contest-submission-queue";
+    private final String contestRoutingKey = "contest-code-execution-route";
 
     // ==============================
     // RabbitMQ Core Configurations
@@ -64,7 +76,16 @@ public class AppConfig {
     }
 
     // ==============================
-    // Code Execution Queue + Exchange
+    // Shared Code Execution Exchange
+    // ==============================
+
+    @Bean(name = "codeExecutionExchange")
+    public DirectExchange codeExecutionExchange() {
+        return new DirectExchange(codeExecutionExchangeName);
+    }
+
+    // ==============================
+    // Old Code Execution Queue (Optional)
     // ==============================
 
     @Bean(name = "codeExecutionQueue")
@@ -72,16 +93,43 @@ public class AppConfig {
         return QueueBuilder.durable(codeExecutionQueueName).build();
     }
 
-    @Bean(name = "codeExecutionExchange")
-    public DirectExchange codeExecutionExchange() {
-        return new DirectExchange(codeExecutionExchangeName);
-    }
-
     @Bean
     public Binding bindCodeExecutionQueueWithExchange(
             @Qualifier("codeExecutionExchange") DirectExchange exchange,
             @Qualifier("codeExecutionQueue") Queue queue) {
         return BindingBuilder.bind(queue).to(exchange).with(codeExecutionRoutingKey);
+    }
+
+    // ==============================
+    // Normal Submission Queue
+    // ==============================
+
+    @Bean(name = "normalCodeExecutionQueue")
+    public Queue normalCodeExecutionQueue() {
+        return QueueBuilder.durable(normalCodeExecutionQueueName).build();
+    }
+
+    @Bean
+    public Binding bindNormalCodeExecutionQueue(
+            @Qualifier("codeExecutionExchange") DirectExchange exchange,
+            @Qualifier("normalCodeExecutionQueue") Queue queue) {
+        return BindingBuilder.bind(queue).to(exchange).with(normalRoutingKey);
+    }
+
+    // ==============================
+    // Contest Submission Queue
+    // ==============================
+
+    @Bean(name = "contestCodeExecutionQueue")
+    public Queue contestCodeExecutionQueue() {
+        return QueueBuilder.durable(contestCodeExecutionQueueName).build();
+    }
+
+    @Bean
+    public Binding bindContestCodeExecutionQueue(
+            @Qualifier("codeExecutionExchange") DirectExchange exchange,
+            @Qualifier("contestCodeExecutionQueue") Queue queue) {
+        return BindingBuilder.bind(queue).to(exchange).with(contestRoutingKey);
     }
 
     // ==============================
@@ -96,5 +144,12 @@ public class AppConfig {
     @Bean
     public ModelMapper getModelMapper() {
         return new ModelMapper();
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper()
+                .registerModule(new JavaTimeModule())  // Handles LocalDateTime, etc.
+                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
     }
 }

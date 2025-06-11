@@ -1,17 +1,20 @@
 package com.CodeLab.Central_Service.integration;
 
 import com.CodeLab.Central_Service.enums.Difficulty;
-import com.CodeLab.Central_Service.model.Problem;
-import com.CodeLab.Central_Service.model.Submission;
+import com.CodeLab.Central_Service.model.*;
 import com.CodeLab.Central_Service.requestDTO.*;
 
 import com.CodeLab.Central_Service.responseDTO.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.stereotype.Component;
-
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 
 
 import java.util.ArrayList;
@@ -27,6 +30,9 @@ public class DBService extends RestAPI{
 
     @Autowired
     ModelMapper modelMapper;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     //User Endpoint calls
 
@@ -251,12 +257,14 @@ public class DBService extends RestAPI{
         return modelMapper.map(response,GeneralResponseDTO.class);
     }
 
+    //submission
+
     public Submission callAddSubmission(SubmissionRequestDTO requestDTO){
         String endpoint = "/submission/add";
 
         Object response = this.makePostCall(baseURL,endpoint,requestDTO,new HashMap<>());
 
-       return   modelMapper.map(response,Submission.class);
+       return  objectMapper.convertValue(response, Submission.class);
 
     }
 
@@ -267,7 +275,7 @@ public class DBService extends RestAPI{
         if (object == null){
             return null;
         }
-        return modelMapper.map(object,Submission.class);
+        return objectMapper.convertValue(object, Submission.class);
     }
 
     public List<Submission> callGetSubmissionByUserId(UUID userId){
@@ -278,8 +286,8 @@ public class DBService extends RestAPI{
 
         List<Submission> list = new ArrayList<>();
 
-        for(Object obj : response){
-            list.add(modelMapper.map(obj,Submission.class));
+        for(Object object : response){
+            list.add(objectMapper.convertValue(object, Submission.class));
         }
         return list;
     }
@@ -293,8 +301,8 @@ public class DBService extends RestAPI{
 
         List<Submission> list = new ArrayList<>();
 
-        for(Object obj : response){
-            list.add(modelMapper.map(obj,Submission.class));
+        for(Object object : response){
+            list.add(objectMapper.convertValue(object, Submission.class));
         }
         return list;
     }
@@ -306,7 +314,8 @@ public class DBService extends RestAPI{
         if (object == null){
             return null;
         }
-        return modelMapper.map(object,Submission.class);
+
+        return objectMapper.convertValue(object, Submission.class);
     }
 
     public List<Submission> callGetSubmissionsByProblemId(UUID problemId){
@@ -315,8 +324,8 @@ public class DBService extends RestAPI{
 
         List<Submission> list = new ArrayList<>();
 
-        for(Object obj : response){
-            list.add(modelMapper.map(obj,Submission.class));
+        for(Object object : response){
+            list.add(objectMapper.convertValue(object, Submission.class));
         }
         return list;
     }
@@ -327,12 +336,127 @@ public class DBService extends RestAPI{
 
         List<Submission> list = new ArrayList<>();
 
-        for(Object obj : response){
-            list.add(modelMapper.map(obj,Submission.class));
+        for(Object object : response){
+            list.add(objectMapper.convertValue(object, Submission.class));
         }
         return list;
     }
 
 
+    //contest
+    public ContestAddedResponseDTO callAddContest(ContestRequestDTO requestDTO) {
+        String endpoint = "/contest/add";
+        Object object = this.makePostCall(baseURL, endpoint, requestDTO, new HashMap<>());
+        return objectMapper.convertValue(object, ContestAddedResponseDTO.class);
+    }
 
+    public Contest callGetContestById(UUID contestId){
+        String endpoint = "/contest/get/" + contestId;
+        Object response = this.makeGetCall(baseURL, endpoint, new HashMap<>());
+        return objectMapper.convertValue(response, Contest.class);
+    }
+
+    public List<UpcomingContestResponseDTO> callGetUpcomingContests(UUID userId) {
+        String endpoint = "/contest/get-upcoming-contests";
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+
+        List<Object> response = this.makeGetCallAsList(baseURL, endpoint, map);
+        List<UpcomingContestResponseDTO> list = new ArrayList<>();
+        for (Object obj : response) {
+            list.add(objectMapper.convertValue(obj, UpcomingContestResponseDTO.class));
+        }
+        return list;
+    }
+
+    public List<UpcomingContestResponseDTO> callGetUpcomingContestsByPage(int pageNo, UUID userId) {
+        String endpoint = "/contest/get-upcoming-contests/" + pageNo;
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+
+        List<Object> response = this.makeGetCallAsList(baseURL, endpoint, map);
+
+        List<UpcomingContestResponseDTO> list = new ArrayList<>();
+        for (Object obj : response) {
+            list.add(objectMapper.convertValue(obj, UpcomingContestResponseDTO.class));
+        }
+        return list;
+    }
+
+    public ContestRegistrationResponseDTO callRegisterForContest(UUID userId, UUID contestId) {
+        String endpoint = "/contest/register";
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+        map.put("contestId", contestId.toString());
+
+        Object response = this.makePostCall(baseURL, endpoint,null, map);
+        return objectMapper.convertValue(response, ContestRegistrationResponseDTO.class);
+    }
+
+
+    public List<LiveContestResponseDTO> callGetLiveContests(UUID userId) {
+        String endpoint = "/contest/get-live-contests";
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+        List<Object> response = this.makeGetCallAsList(baseURL, endpoint, map);
+
+        List<LiveContestResponseDTO> list = new ArrayList<>();
+        for (Object obj : response) {
+            list.add(objectMapper.convertValue(obj, LiveContestResponseDTO.class));
+        }
+        return list;
+    }
+
+    public List<LiveContestResponseDTO> callGetLiveContestsByPage(int pageNo, UUID userId) {
+        String endpoint = "/contest/get-live-contests/" + pageNo;
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+        List<Object> response = this.makeGetCallAsList(baseURL, endpoint, map);
+
+        List<LiveContestResponseDTO> list = new ArrayList<>();
+        for (Object obj : response) {
+            list.add(objectMapper.convertValue(obj, LiveContestResponseDTO.class));
+        }
+        return list;
+    }
+
+
+    public ContestStartResponseDTO callUserStartsContest(UUID userId, UUID contestId) {
+        String endpoint = "/contest/user-start-contest";
+        HashMap<String, String> map = new HashMap<>();
+        map.put("userId", userId.toString());
+        map.put("contestId", contestId.toString());
+
+        Object object = this.makePostCall(baseURL, endpoint, null, map);
+        return objectMapper.convertValue(object, ContestStartResponseDTO.class);
+    }
+
+
+    public Problem callGetContestProblem(UUID problemId) {
+        String endpoint = "/contest/problem/" + problemId;
+        Object response = this.makeGetCall(baseURL, endpoint, new HashMap<>());
+        return objectMapper.convertValue(response, Problem.class);
+    }
+
+    public PartialContestSubmission callSubmitPartialContest(PartialContestSubmissionRequestDTO requestDTO){
+        String endpoint = "/contest/partial-submit";
+        Object response = this.makePostCall(baseURL,endpoint,requestDTO,new HashMap<>());
+        return objectMapper.convertValue(response,PartialContestSubmission.class);
+    }
+
+    public FullContestSubmission callSubmitContest(UUID userId,UUID contestId){
+        String endpoint = "/contest/submit";
+        HashMap<String,String> map = new HashMap<>();
+        map.put("userId",userId+"");
+        map.put("contestId",contestId+"");
+
+        Object response = this.makePostCall(baseURL,endpoint,null,map);
+
+        return objectMapper.convertValue(response,FullContestSubmission.class);
+
+    }
 }

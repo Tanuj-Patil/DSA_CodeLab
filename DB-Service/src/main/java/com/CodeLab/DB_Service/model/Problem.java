@@ -66,4 +66,9 @@ public class Problem {
 
     @Column(name = "problem_note")
     private String note;
+
+    @Column(name = "is_visible")
+    private boolean isVisible;
+
+
 }

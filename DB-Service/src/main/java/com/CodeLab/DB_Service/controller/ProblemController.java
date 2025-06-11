@@ -23,7 +23,7 @@ public class ProblemController {
 
     @PostMapping("/add")
     public ProblemAddedResponseDTO addProblem(@RequestBody ProblemRequestDTO problemRequestDTO){
-        Problem problem  = problemService.addProblem(problemRequestDTO);
+        Problem problem  = problemService.addProblem(problemRequestDTO,true);
         ProblemAddedResponseDTO responseDTO = new ProblemAddedResponseDTO();
         responseDTO.setProblem(problem);
         if(problem != null){

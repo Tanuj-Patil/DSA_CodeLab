@@ -1,6 +1,7 @@
 package com.CodeLab.Code_Execution_Service.integration;
 
 import com.CodeLab.Code_Execution_Service.enums.SubmissionStatus;
+import com.CodeLab.Code_Execution_Service.requestDTO.UpdatePartialContestSubmissionRequestDTO;
 import com.CodeLab.Code_Execution_Service.requestDTO.UpdateSubmissionRequestDTO;
 import com.CodeLab.Code_Execution_Service.responseDTO.GeneralResponseDTO;
 import org.modelmapper.ModelMapper;
@@ -21,6 +22,11 @@ public class DBService extends RestAPI{
 
     public GeneralResponseDTO callUpdateSubmission(UpdateSubmissionRequestDTO requestDTO){
         String endpoint = "/submission/update-status";
+        Object object = this.makePutCall(baseURL,endpoint,requestDTO,new HashMap<>());
+        return modelMapper.map(object,GeneralResponseDTO.class);
+    }
+    public GeneralResponseDTO callUpdatePartialContestSubmission(UpdatePartialContestSubmissionRequestDTO requestDTO){
+        String endpoint = "/contest/update-status";
         Object object = this.makePutCall(baseURL,endpoint,requestDTO,new HashMap<>());
         return modelMapper.map(object,GeneralResponseDTO.class);
     }

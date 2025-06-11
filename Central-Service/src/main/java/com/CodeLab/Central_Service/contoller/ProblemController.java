@@ -48,13 +48,13 @@ public class ProblemController {
     @GetMapping("/get")
     public ResponseEntity<?> getProblems(){
         List<Problem> problemList = problemService.getProblems();
-        return new ResponseEntity<>(problemList,HttpStatus.FOUND);
+        return new ResponseEntity<>(problemList,HttpStatus.OK);
     }
 
     @GetMapping("/get/page")
     public ResponseEntity<?> getProblemsByPage(@RequestParam int pageNo){
         List<Problem> problemList = problemService.getProblemsByPage(pageNo);
-        return new ResponseEntity<>(problemList,HttpStatus.FOUND);
+        return new ResponseEntity<>(problemList,HttpStatus.OK);
     }
 
     @GetMapping("/get/{problemId}")
@@ -63,33 +63,33 @@ public class ProblemController {
         if(problem == null){
             GeneralResponseDTO generalResponseDTO = new GeneralResponseDTO();
             generalResponseDTO.setMessage("Problem with Id-"+problemId+" not Found!!!");
-            return new ResponseEntity<>(generalResponseDTO,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(generalResponseDTO,HttpStatus.OK);
         }
-        return new ResponseEntity<>(problem,HttpStatus.FOUND);
+        return new ResponseEntity<>(problem,HttpStatus.OK);
     }
 
     @GetMapping("/get-by-topic")
     public ResponseEntity<?> getProblemsTopicWise(@RequestParam String topicName){
         List<Problem> problemList = problemService.getProblemsTopicWise(topicName);
-        return new ResponseEntity<>(problemList,HttpStatus.FOUND);
+        return new ResponseEntity<>(problemList,HttpStatus.OK);
     }
 
     @GetMapping("/get-by-company")
     public ResponseEntity<?> getProblemsCompanyWise(@RequestParam String companyName){
         List<Problem> problemList = problemService.getProblemsCompanyWise(companyName);
-        return new ResponseEntity<>(problemList,HttpStatus.FOUND);
+        return new ResponseEntity<>(problemList,HttpStatus.OK);
     }
 
     @GetMapping("/get-count-by-topic")
     public ResponseEntity<?> getProblemsCountTopicWise(@RequestParam String topicName){
         Long ctn = problemService.getProblemsCountTopicWise(topicName);
-        return new ResponseEntity<>(ctn,HttpStatus.FOUND);
+        return new ResponseEntity<>(ctn,HttpStatus.OK);
     }
 
     @GetMapping("/get-count-by-company")
     public ResponseEntity<?> getProblemsCountCompanyWise(@RequestParam String companyName){
         Long ctn = problemService.getProblemsCountCompanyWise(companyName);
-        return new ResponseEntity<>(ctn,HttpStatus.FOUND);
+        return new ResponseEntity<>(ctn,HttpStatus.OK);
     }
 
     @GetMapping("/get-by-difficulty")
@@ -97,9 +97,9 @@ public class ProblemController {
         List<Problem> problemList = problemService.getProblemByDifficulty(difficulty);
 
         if(problemList == null || problemList.isEmpty()){
-            return new ResponseEntity<>(problemList,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(problemList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(problemList,HttpStatus.FOUND);
+        return new ResponseEntity<>(problemList,HttpStatus.OK);
     }
 
 
@@ -108,9 +108,9 @@ public class ProblemController {
     public ResponseEntity<?> searchProblem(@RequestParam String keyword){
         List<Problem> problemList =  problemService.searchProblem(keyword);
         if(problemList == null || problemList.size() == 0){
-            return new ResponseEntity<>(problemList,HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(problemList,HttpStatus.OK);
         }
-        return new ResponseEntity<>(problemList,HttpStatus.FOUND);
+        return new ResponseEntity<>(problemList,HttpStatus.OK);
     }
 
 

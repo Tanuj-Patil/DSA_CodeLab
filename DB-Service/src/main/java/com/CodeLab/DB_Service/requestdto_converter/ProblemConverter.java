@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ProblemConverter {
 
-    public static Problem problemConverter(ProblemRequestDTO problemRequestDTO) {
+    public static Problem problemConverter(ProblemRequestDTO problemRequestDTO,boolean isVisible) {
 
         Problem problem = new Problem();
 
@@ -19,6 +19,7 @@ public class ProblemConverter {
         problem.setNote(problemRequestDTO.getNote());
         problem.setTopicList(problemRequestDTO.getTopicList());
         problem.setCompanyList(problemRequestDTO.getCompanyList());
+        problem.setVisible(isVisible);
 
         List<Example> exampleList = ExampleConverter.exampleConverter(problemRequestDTO.getExampleRequestDTOList(), problem);
         problem.setExampleList(exampleList);

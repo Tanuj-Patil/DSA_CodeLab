@@ -1,0 +1,15 @@
+package com.CodeLab.Central_Service.responseDTO;
+
+import com.CodeLab.Central_Service.model.Contest;
+import lombok.*;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+
+public class UpcomingContestResponseDTO {
+    private Contest contest;
+    private boolean userAlreadyRegistered;
+}

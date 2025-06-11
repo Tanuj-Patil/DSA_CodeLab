@@ -1,14 +1,13 @@
 package com.CodeLab.Central_Service.service;
 
 import com.CodeLab.Central_Service.exception.ErrorException;
+import com.CodeLab.Central_Service.exception.NotFoundException;
 import com.CodeLab.Central_Service.integration.DBService;
 import com.CodeLab.Central_Service.integration.ExecutionService;
 import com.CodeLab.Central_Service.integration.RabbitMQIntegration;
-import com.CodeLab.Central_Service.model.CodeExecutionResult;
-import com.CodeLab.Central_Service.model.Problem;
-import com.CodeLab.Central_Service.model.Submission;
-import com.CodeLab.Central_Service.model.TestCase;
+import com.CodeLab.Central_Service.model.*;
 import com.CodeLab.Central_Service.requestDTO.CodeRequestDTO;
+import com.CodeLab.Central_Service.requestDTO.PartialContestSubmissionRequestDTO;
 import com.CodeLab.Central_Service.requestDTO.RunCodeRequestDTO;
 import com.CodeLab.Central_Service.requestDTO.SubmissionRequestDTO;
 import com.CodeLab.Central_Service.responseDTO.CentralServiceRunCodeResponse;
@@ -162,6 +161,7 @@ public class CodeExecutionService {
                 runCodeRequestDTO.setVersionIndex(versionIndex);
                 runCodeRequestDTO.setInput(testCase.getTestCaseInput());
                 runCodeRequestDTO.setExpectedOutput(testCase.getTestCaseOutput());
+                runCodeRequestDTO.setPartialContestSubmission(false);
 
                 RunCodeResponseDTO responseDTO = executionService.callRunCode(runCodeRequestDTO);
 
@@ -255,7 +255,7 @@ public class CodeExecutionService {
         // Fetch problem and validate
         Problem problem = dbService.callGetProblem(problemId);
         if (problem == null) {
-            throw new ErrorException("Problem Not Found!");
+            throw new NotFoundException("Problem with id-" + userId + " not Found!!!");
         }
 
 
@@ -273,7 +273,7 @@ public class CodeExecutionService {
         );
 
         // Precompute shared fields
-        RunCodeRequestDTO baseRequest = convertToRunCodeRequest(requestDTO);
+        RunCodeRequestDTO baseRequest = convertToRunCodeRequest(requestDTO,false);
         baseRequest.setSubmissionId(submission.getSubmissionId());
 
         // Prepare execution requests
@@ -287,11 +287,58 @@ public class CodeExecutionService {
                 .collect(Collectors.toList());
 
         // Send to execution queue
-        rabbitMQIntegration.sendCodeExecutionRequest(executionRequests);
+        rabbitMQIntegration.sendNormalCodeExecutionRequest(executionRequests);
         return submission;
     }
 
-    public RunCodeRequestDTO convertToRunCodeRequest(CodeRequestDTO requestDTO) {
+
+    public PartialContestSubmission contestPartialSubmit(CodeRequestDTO requestDTO, UUID userId,UUID contestId) {
+        UUID problemId = requestDTO.getProblemId();
+
+        // Fetch problem and validate
+        Problem problem = dbService.callGetProblem(problemId);
+        if (problem == null) {
+            throw new NotFoundException("Problem with id-" + userId + " not Found!!!");
+        }
+
+        Contest contest = dbService.callGetContestById(contestId);
+        if (contest == null) {
+            throw new NotFoundException("Contest with id-" + contestId + " not Found!!!");
+        }
+
+
+        List<TestCase> testCases = problem.getTestCasesList();
+//        List<TestCase> testCases = problem.getAllVisibleTestCases();
+
+
+        if (testCases == null || testCases.isEmpty()) {
+            throw new ErrorException("No test cases available for submission.");
+        }
+
+        // Create submission
+
+        PartialContestSubmission submission = dbService.callSubmitPartialContest(new PartialContestSubmissionRequestDTO(requestDTO.getLanguage(),userId,problemId,contestId));
+
+        // Precompute shared fields
+        RunCodeRequestDTO baseRequest = convertToRunCodeRequest(requestDTO,true);
+        baseRequest.setSubmissionId(submission.getSubmissionId());
+
+        // Prepare execution requests
+        List<RunCodeRequestDTO> executionRequests = testCases.stream()
+                .map(testCase -> {
+                    RunCodeRequestDTO request = new RunCodeRequestDTO(baseRequest);
+                    request.setInput(testCase.getTestCaseInput());
+                    request.setExpectedOutput(testCase.getTestCaseOutput());
+                    return request;
+                })
+                .collect(Collectors.toList());
+
+        // Send to execution queue
+        rabbitMQIntegration.sendContestCodeExecutionRequest(executionRequests);
+        return submission;
+    }
+
+    public RunCodeRequestDTO convertToRunCodeRequest(CodeRequestDTO requestDTO,boolean isPartialContestSubmission) {
         String invisibleCode = requestDTO.getInvisibleCode();
         String visibleCode = requestDTO.getVisibleCode();
         String language = requestDTO.getLanguage().toString();
@@ -301,6 +348,7 @@ public class CodeExecutionService {
         runCodeRequestDTO.setVisibleCode(visibleCode);
         runCodeRequestDTO.setLanguage(normalizeLanguage(language));
         runCodeRequestDTO.setVersionIndex(getVersionIndex(language));
+        runCodeRequestDTO.setPartialContestSubmission(isPartialContestSubmission);
         return runCodeRequestDTO;
     }
 

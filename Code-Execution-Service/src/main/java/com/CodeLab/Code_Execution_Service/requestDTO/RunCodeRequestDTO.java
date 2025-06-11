@@ -18,6 +18,9 @@ public class RunCodeRequestDTO {
     private String input;
     private String expectedOutput;
     private UUID submissionId;
+
+    private boolean isPartialContestSubmission;
+
     public RunCodeRequestDTO(RunCodeRequestDTO other) {
         this.visibleCode = other.getVisibleCode();
         this.invisibleCode = other.getInvisibleCode();
